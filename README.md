@@ -10,6 +10,7 @@ eXtended ARM coprocessor protocol for the ZZ9000 Amiga RTG board.
 - Shared DDR mailbox
 - XACP opcode protocol
 - Experimental ARM compute offload
+- Mpeg-1 video player with MP2 audio support
 
 ## Repository contents
 
