@@ -95,7 +95,7 @@ struct Library *P96Base = NULL;
 #define MPEG_CMD_STOP      2UL
 
 /* Embedded Core1 MPEG stream blob with STOP ACK support */
-#include "mpeg_core1_blob_stream_diag15_stopack.h"
+#include "mpeg_core1_blob_stream.h"
 
 typedef struct {
     volatile ULONG mp3_base, mp3_size, mp3_write, mp3_read;
