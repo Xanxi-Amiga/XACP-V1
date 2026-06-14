@@ -198,7 +198,7 @@ Special thanks to the Amiga and ZZ9000 communities for testing, feedback and tec
 
 ## Source and documentation
 
-Sources, documentation and additional technical details will be made available progressively on my GitHub.
+Source code release is being prepared. This binary release is provided as an early technical preview for ZZ9000 users.
 
 GitHub: `https://github.com/Xanxi-Amiga`
 
