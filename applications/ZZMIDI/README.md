@@ -1,6 +1,6 @@
-# ZZMIDI
+# ZZMIDIPlay
 
-**ZZMIDIPlay v0.5 for XACP v1.5**
+**ZZMIDIPlay for XACP v1.5**
 SoundFont MIDI playback for Amiga systems equipped with the MNT ZZ9000 and the Xanxi/XACP firmware branch.
 
 ZZMIDIPlay is a GUI MIDI file player. It uses the ZZ9000 ARM side to render MIDI through a SoundFont, then streams PCM audio back to the Amiga side for playback through AHI.
