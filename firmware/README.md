@@ -196,8 +196,6 @@ docs/XACP_V1_5_HISTORY_MEMORY_MAP_PART2.md
 
 ---
 
-```
-
 ## FWUP / FWUpdate
 
 The XX19 firmware package includes **FWUP** firmware-update support adapted by Xanxi in case the user prefer to not extract the SD card from the ZZ9000.
@@ -213,6 +211,7 @@ The Amiga-side update executable is:
 ```text
 ZZFWUpdate
 ```
+This updater executable is an external tool and is not included in this repository or release package unless explicit redistribution permission is granted by its author.
 
 Recommended update procedure:
 
