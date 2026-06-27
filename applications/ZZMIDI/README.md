@@ -1,9 +1,11 @@
 # ZZMIDIPlay
 
-**ZZMIDIPlay for XACP v1.5**
+ZZMIDIPlay v0.5 for XACP v1.5
 SoundFont MIDI playback for Amiga systems equipped with the MNT ZZ9000 and the Xanxi/XACP firmware branch.
 
-ZZMIDIPlay is a GUI MIDI file player. It uses the ZZ9000 ARM side to render MIDI through a SoundFont, then streams PCM audio back to the Amiga side for playback through AHI.
+ZZMIDIPlay is a GUI MIDI file player built around the inclusion of TinySoundFont in the ZZ9000 XX19 firmware. The Amiga-side application provides the user interface, playlist handling, file selection and AHI playback, while the ZZ9000 ARM side performs the SoundFont synthesis.
+
+MIDI files and SoundFont banks are staged through the XACP v1.5 shared-memory map. The firmware-side MIDI/SF2 service renders the MIDI stream through TinySoundFont, then writes PCM audio back to the Amiga side for playback through AHI.
 
 This release focuses on MIDI file playback with SoundFont support up to 32 MB and the corrected XACP v1.5 memory map.
 
@@ -163,6 +165,24 @@ Future XACP services must not reuse the ZZMIDI staging area without explicitly c
 
 ## Credits
 
-ZZMIDIPlay uses the XACP approach developed by **Xanxi** for the ZZ9000.
+## Credits
+
+ZZMIDIPlay and the XACP / ZZ9000 integration are developed by **Xanxi**.
+
+ZZMIDIPlay uses the following third-party components:
+
+```text
+TinySoundFont
+  SoundFont 2 synthesis library by Bernhard Schelling.
+  Used for SF2 instrument rendering on the ZZ9000 ARM side.
+  License: MIT.
+
+TinyMidiLoader
+  Minimal Standard MIDI File parser by Bernhard Schelling.
+  Used for loading and parsing MIDI files before synthesis.
+  License: zlib.
+```
+
+Original third-party license notices must be preserved in source distributions and should be included in binary release packages.
 
 Created for the Amiga and ZZ9000 community.
