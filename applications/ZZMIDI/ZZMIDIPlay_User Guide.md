@@ -3,9 +3,12 @@
 **ZZMIDIPlay v0.5 - Xanxi 2026**
 A SoundFont MIDI player for the Amiga, powered by the MNT ZZ9000 ARM coprocessor.
 
-ZZMIDIPlay uses the XACP v1.5 protocol to render MIDI on the ZZ9000 ARM Cortex-A9 using TinySoundFont and TinyMidiLoader. The generated PCM audio is streamed back to the Amiga side and played through AHI.
+ZZMIDIPlay is based on the inclusion of **TinySoundFont** in the ZZ9000 XX19 firmware. The Amiga application acts as a GUI frontend: it lets you select a SoundFont, build a MIDI playlist and control playback. The actual SoundFont synthesis runs on the ZZ9000 ARM side through the XACP v1.5 protocol.
+
+The generated PCM audio is streamed back to the Amiga side and played through AHI.
 
 The result is General MIDI playback with low 68k CPU usage while the heavy synthesis work runs on the ZZ9000.
+
 
 ---
 
