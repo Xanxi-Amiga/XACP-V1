@@ -196,25 +196,39 @@ docs/XACP_V1_5_HISTORY_MEMORY_MAP_PART2.md
 
 ---
 
-## Release naming
-
-For the public XACP v1.5 release, use:
-
-```text
-BOOT_ZZ9000_XX19_XACP_v1.5.bin
 ```
 
-GitHub release tag:
+## FWUP / FWUpdate
+
+The XX19 firmware package includes **FWUP** firmware-update support adapted by Xanxi in case the user prefer to not extract the SD card from the ZZ9000.
+
+FWUP / FWUpdate support is credited to:
 
 ```text
-v1.5.0
+MiDWaN / BlitterStudio
 ```
 
-Suggested release title:
+The Amiga-side update executable is:
 
 ```text
-XACP v1.5 — XX19 public multimedia baseline
+ZZFWUpdate
 ```
+
+Recommended update procedure:
+
+```text
+1. Copy ZZFWUpdate and the XX19 BOOT binary to the Amiga.
+2. Close multimedia applications before flashing.
+3. Run ZZFWUpdate from CLI.
+4. Select the matching BOOT_ZZ9000_XX19_XACP_v1.5.bin file.
+5. Wait until the update process is complete.
+6. Do not interrupt the update process.
+7. Power off the Amiga completely.
+8. Power on again and test the new firmware.
+```
+
+After replacing firmware or `zz9000.card`, a full power cycle is recommended before testing XACP applications.
+
 
 ---
 
