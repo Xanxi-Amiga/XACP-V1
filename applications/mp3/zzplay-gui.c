@@ -1,18 +1,18 @@
 /*
- * ZZPlayGUI.c — ZZ9000 XACP MP3 Player GUI
+ * ZZPlayGUI.c - ZZ9000 XACP MP3 Player GUI
  * Version 1.0 / XX16
  *
  * GUI : Intuition/GadTools AmigaOS 3.1
- * Architecturé sur g13MULTI6-256-8.c (MULTIPLIER=8, ring circulaire)
+ * Architecture sur g13MULTI6-256-8.c (MULTIPLIER=8, ring circulaire)
  *
- * Build (two-step required — one-step fails with this toolchain):
+ * Build (two-step required - one-step fails with this toolchain):
  *   m68k-amigaos-gcc -O2 -noixemul -m68020 -c -o zzplay-gui.o zzplay-gui.c
  *   m68k-amigaos-gcc      -noixemul -m68020 -o ZZPlayGUI   zzplay-gui.o -lamiga
  *
  * Usage :
  *   zzplay-gui [fichier1.mp3 fichier2.mp3 ...]
- *   Bouton OUV : sélection ASL multi-fichiers
- *   Espace : play/pause — Echap : stop — Flèches : prev/next
+ *   Bouton OUV : selection ASL multi-fichiers
+ *   Espace : play/pause - Echap : stop - Fleches : prev/next
  */
 
 #define __USE_SYSBASE
@@ -41,16 +41,16 @@
 #include <proto/asl.h>
 #include <proto/expansion.h>
 #include <proto/graphics.h>
-/* proto/ahi.h non inclus : AHI utilisé comme device, pas comme library */
+/* proto/ahi.h non inclus : AHI utilise comme device, pas comme library */
 
 #include <string.h>
 #include <stdio.h>
 
 /* ================================================================
- * Bases des librairies — déclarées par proto/*.h (bebbo NDK)
- * On déclare seulement GadToolsBase et AslBase qui sont
+ * Bases des librairies - declarees par proto/*.h (bebbo NDK)
+ * On declare seulement GadToolsBase et AslBase qui sont
  * struct Library* simples et pas toujours dans le NDK de base.
- * IntuitionBase et GfxBase sont déclarés automatiquement.
+ * IntuitionBase et GfxBase sont declares automatiquement.
  * ================================================================ */
 struct Library *GadToolsBase = NULL;
 struct Library *AslBase      = NULL;
@@ -79,7 +79,7 @@ struct Library *AslBase      = NULL;
 #define MP3_PUSH_SIZE       (256UL * 1024UL)
 
 #define MULTIPLIER          8                    /* ~160 ms/buffer @ 44100 stereo */
-#define AHI_BUFSIZE         65536UL              /* doit être >= g_chunk max       */
+#define AHI_BUFSIZE         65536UL              /* doit etre >= g_chunk max       */
 
 #define BE32(x) (x)   /* 68k = big-endian natif */
 
@@ -111,13 +111,22 @@ typedef struct {
 #define GAD_PROGRESS 11
 #define GAD_COUNT    12
 
-/* Labels (kept for reference — icons used instead) */
+/* Playlist-window button gadget IDs (separate gadget context). */
+#define PLG_LIST     1
+#define PLG_ADD      2
+#define PLG_DEL      3
+#define PLG_UP       4
+#define PLG_DOWN     5
+#define PLG_CLEAR    6
+#define PLG_PLAY     7
+
+/* Labels (kept for reference - icons used instead) */
 static const char *BTN_LABELS[GAD_COUNT] = {
     NULL, "|<", "<<", "[]", "|>", "||", ">>", ">|", "OP", "PLS", "RPT", NULL
 };
 
 /* ================================================================
- * Transport button bitmap icons — 16×8 pixels, 1 bitplane
+ * Transport button bitmap icons - 168 pixels, 1 bitplane
  * bit15 = leftmost pixel (column 0)
  * Rendered with DrawImage after GT_RefreshWindow and after GADGETUP.
  * pen0 (background) matches GadTools button face on standard WB.
@@ -125,43 +134,43 @@ static const char *BTN_LABELS[GAD_COUNT] = {
 #define BTN_ICON_W  16
 #define BTN_ICON_H   8
 
-/* 1: PREV |<  — left-pointing triangle + right vertical bar */
+/* 1: PREV |<  - left-pointing triangle + right vertical bar */
 static const UWORD g_idata_prev[BTN_ICON_H] = {
     0x0000, 0x0408, 0x0C08, 0x1C08, 0x1C08, 0x0C08, 0x0408, 0x0000
 };
-/* 2: REW <<   — two left-pointing triangles */
+/* 2: REW <<   - two left-pointing triangles */
 static const UWORD g_idata_rew[BTN_ICON_H] = {
     0x0000, 0x0440, 0x0CC0, 0x1DC0, 0x1DC0, 0x0CC0, 0x0440, 0x0000
 };
-/* 3: STOP []  — solid square */
+/* 3: STOP []  - solid square */
 static const UWORD g_idata_stop[BTN_ICON_H] = {
     0x0000, 0x07E0, 0x07E0, 0x07E0, 0x07E0, 0x07E0, 0x07E0, 0x0000
 };
-/* 4: PLAY |>  — right-pointing triangle */
+/* 4: PLAY |>  - right-pointing triangle */
 static const UWORD g_idata_play[BTN_ICON_H] = {
     0x1000, 0x1800, 0x1C00, 0x1E00, 0x1C00, 0x1800, 0x1000, 0x0000
 };
-/* 5: PAUSE || — two vertical bars */
+/* 5: PAUSE || - two vertical bars */
 static const UWORD g_idata_pause[BTN_ICON_H] = {
     0x0000, 0x1B00, 0x1B00, 0x1B00, 0x1B00, 0x1B00, 0x1B00, 0x0000
 };
-/* 6: FF >>    — two right-pointing triangles */
+/* 6: FF >>    - two right-pointing triangles */
 static const UWORD g_idata_ff[BTN_ICON_H] = {
     0x0000, 0x0220, 0x0330, 0x03B8, 0x03B8, 0x0330, 0x0220, 0x0000
 };
-/* 7: NEXT >|  — right-pointing triangle + left vertical bar */
+/* 7: NEXT >|  - right-pointing triangle + left vertical bar */
 static const UWORD g_idata_next[BTN_ICON_H] = {
     0x0000, 0x1080, 0x1880, 0x1C80, 0x1C80, 0x1880, 0x1080, 0x0000
 };
-/* 8: OPEN     — folder outline */
+/* 8: OPEN     - folder outline */
 static const UWORD g_idata_open[BTN_ICON_H] = {
     0x0000, 0x1800, 0x3FC0, 0x2040, 0x2040, 0x2040, 0x3FC0, 0x0000
 };
-/* 9: PLS      — three horizontal lines (playlist) */
+/* 9: PLS      - three horizontal lines (playlist) */
 static const UWORD g_idata_pls[BTN_ICON_H] = {
     0x0000, 0x3FE0, 0x0000, 0x3FE0, 0x0000, 0x3FE0, 0x0000, 0x0000
 };
-/* 10: LOOP    — rectangular loop with arrowheads (repeat mode) */
+/* 10: LOOP    - rectangular loop with arrowheads (repeat mode) */
 static const UWORD g_idata_loop[BTN_ICON_H] = {
     0x0000, 0x1FC0, 0x2020, 0x2070, 0x7020, 0x1020, 0x0FC0, 0x0000
 };
@@ -171,26 +180,26 @@ static struct Image g_btn_img[10];  /* one per transport button */
 /* Echelle de la barre de progression */
 #define PROGRESS_MAX 1000UL
 
-/* Largeur fenêtre */
+/* Largeur fenetre */
 #define WIN_WIDTH    320
 
 /* Playlist */
 #define MAX_PLAYLIST  256
-#define PATH_BUF_SIZE 512   /* taille fixe de chaque entrée playlist */
+#define PATH_BUF_SIZE 512   /* taille fixe de chaque entree playlist */
 
 /* ================================================================
  * Etat global du player
  * ================================================================ */
 typedef enum { STATE_STOPPED = 0, STATE_PLAYING, STATE_PAUSED } PlayerState;
 
-/* Fenêtre et gadgets */
+/* Fenetre et gadgets */
 static struct Window   *g_win   = NULL;
 static struct Screen   *g_scr   = NULL;
 static APTR             g_vi    = NULL;
 static struct Gadget   *g_glist = NULL;
 static struct Gadget   *g_gad[GAD_COUNT];
 
-/* Coordonnées des lignes de texte (pixels fenêtre absolus) */
+/* Coordonnees des lignes de texte (pixels fenetre absolus) */
 static WORD g_tx, g_ty[3], g_th;   /* x, y[3 lignes], hauteur ligne */
 static WORD g_iw;                   /* largeur interne */
 
@@ -212,7 +221,7 @@ static ULONG            g_wptr   = 0;
 static ULONG            g_prd    = 0;
 static ULONG            g_sr     = 44100, g_ch = 2;
 static ULONG            g_chunk  = 0;
-static ULONG            g_tfest  = 0;   /* total frames estimé */
+static ULONG            g_tfest  = 0;   /* total frames estime */
 static XACP_StreamControl *g_sc  = NULL;
 static UBYTE           *g_mring  = NULL;
 static UBYTE           *g_pring  = NULL;
@@ -229,26 +238,34 @@ static UBYTE g_buf0[AHI_BUFSIZE];
 static UBYTE g_buf1[AHI_BUFSIZE];
 
 /* Display */
-static char  g_dispname[48];          /* nom de fichier tronqué */
+static char  g_dispname[48];          /* nom de fichier tronque */
 static BOOL  g_quit = FALSE;
 static BOOL  g_loop = FALSE;          /* repeat/loop mode */
 
-/* Display cache — skip redraw when content unchanged */
+/* Display cache - skip redraw when content unchanged */
 static char  g_row_cache[3][80];      /* last drawn string per row */
 static ULONG g_last_slider = 0xFFFFFFFFUL; /* force first draw */
 
-/* Bytes réellement consommés par le décodeur ARM (pour bitrate/durée stables) */
-static ULONG g_mp3rd_prev  = 0;   /* valeur précédente de sc->mp3_read  */
-static ULONG g_mp3_decoded = 0;   /* total accumulé depuis stream_open  */
+/* Bytes reellement consommes par le decodeur ARM (pour bitrate/duree stables) */
+static ULONG g_mp3rd_prev  = 0;   /* valeur precedente de sc->mp3_read  */
+static ULONG g_mp3_decoded = 0;   /* total accumule depuis stream_open  */
 
-/* Fenêtre playlist */
+/* Fenetre playlist */
 static struct Window *g_plswin   = NULL;
 static struct Gadget *g_plsglist = NULL;
 static struct Gadget *g_plsgad   = NULL;
+/* Playlist editing: button gadgets + selected row (distinct from g_cur, the
+ * row currently playing). */
+static struct Gadget *g_plsbtn[PLG_PLAY + 1] = { NULL };
+static int            g_pls_sel  = -1;
 
-/* Exec List pour le LISTVIEW_KIND (nœuds persistants) */
+/* Exec List for the LISTVIEW_KIND (persistent nodes) */
 static struct List g_pls_execlist;
 static struct Node g_pls_nodes[MAX_PLAYLIST];
+/* Display strings with a leading ASCII marker (no reliable native highlight in
+ * GadTools 3.1): "*> " sel+current, "*  " current, ">  " selected, "   " none. */
+#define PLS_DISP_MAX 280
+static char        g_pls_display[MAX_PLAYLIST][PLS_DISP_MAX];
 
 /* ================================================================
  * Helpers ring buffer
@@ -285,7 +302,7 @@ static void ring_copy_out(UBYTE *ring, ULONG rsz,
 }
 
 /* ================================================================
- * Affichage — texte direct dans RastPort
+ * Affichage - texte direct dans RastPort
  * ================================================================ */
 static void draw_row(int row, const char *str)
 {
@@ -325,19 +342,19 @@ static void update_display(void)
         sr     = BE32(g_sc->sample_rate); if (!sr) sr = g_sr;
         ch     = BE32(g_sc->channels);    if (!ch || ch > 2) ch = g_ch;
 
-        /* Temps écoulé : 1152 samples/frame MPEG-1 L3 */
+        /* Temps ecoule : 1152 samples/frame MPEG-1 L3 */
         if (sr > 0)
             elapsed_ms = (frames * 1152UL / sr) * 1000UL;
 
         if (g_mp3_decoded > 0 && frames > 0) {
-            /* bytes/frame moyen = décodés réels → stable pour CBR */
+            /* bytes/frame moyen = decodes reels  stable pour CBR */
             ULONG bpf = g_mp3_decoded / frames;   /* bytes per frame */
 
             /* Bitrate kbps = bits/ms */
             if (bpf > 0 && elapsed_ms > 0)
                 bitrate = (g_mp3_decoded * 8UL) / elapsed_ms;
 
-            /* Durée totale : sans multiplication g_mp3sz*frames (overflow) */
+            /* Duree totale : sans multiplication g_mp3sz*frames (overflow) */
             if (bpf > 0)
                 g_tfest = (ULONG)g_mp3sz / bpf;
         }
@@ -352,12 +369,12 @@ static void update_display(void)
     /* Ligne 0 : nom de fichier */
     draw_row(0, g_dispname);
 
-    /* Ligne 1 : temps / durée — fréquence — canaux */
+    /* Ligne 1 : temps / duree - frequence - canaux */
     sprintf(buf, "%lu:%02lu / %lu:%02lu  %luHz  %s",
             em, es, tm, ts, sr, (ch == 2) ? "Stereo" : "Mono");
     draw_row(1, buf);
 
-    /* Ligne 2 : bitrate moyen — frames — underruns */
+    /* Ligne 2 : bitrate moyen - frames - underruns */
     if (g_state != STATE_STOPPED && g_sc) {
         sprintf(buf, "%lu kbps  %luHz  %s",
                 bitrate, sr,
@@ -367,11 +384,11 @@ static void update_display(void)
     }
     draw_row(2, buf);
 
-    /* Barre de progression — dessinée DIRECTEMENT via RastPort/GfxBase.
+    /* Barre de progression - dessinee DIRECTEMENT via RastPort/GfxBase.
      * GT_SetGadgetAttrs bloquerait sur le verrou Intuition pendant le
      * tracking du menu WB (clic droit) et couperait l'audio.
-     * RectFill n'utilise que le verrou de la layer de notre fenêtre :
-     * indépendant du menu, jamais bloquant pour nous. */
+     * RectFill n'utilise que le verrou de la layer de notre fenetre :
+     * independant du menu, jamais bloquant pour nous. */
     if (g_gad[GAD_PROGRESS] && g_tfest > 0) {
         ULONG level = (frames < g_tfest) ? (frames * PROGRESS_MAX / g_tfest)
                                           : PROGRESS_MAX;
@@ -395,7 +412,7 @@ static void update_display(void)
 }
 
 /* ================================================================
- * AHI — envoi d'un chunk PCM
+ * AHI - envoi d'un chunk PCM
  * ================================================================ */
 static void send_ahi_chunk(int slot, UBYTE *buf, ULONG len)
 {
@@ -407,14 +424,14 @@ static void send_ahi_chunk(int slot, UBYTE *buf, ULONG len)
     g_req[slot]->ahir_Type           = ahi_type;
     g_req[slot]->ahir_Volume         = 0x10000L;
     g_req[slot]->ahir_Position       = 0x8000L;
-    /* Chain behind the other slot if it is active — gapless double-buffering */
+    /* Chain behind the other slot if it is active - gapless double-buffering */
     g_req[slot]->ahir_Link           = g_act[slot ^ 1] ? g_req[slot ^ 1] : NULL;
     SendIO((struct IORequest *)g_req[slot]);
     g_act[slot] = TRUE;
 }
 
 /* ================================================================
- * AHI — arrêt propre de tous les slots
+ * AHI - arret propre de tous les slots
  * ================================================================ */
 static void ahi_stop_all(void)
 {
@@ -430,7 +447,7 @@ static void ahi_stop_all(void)
 }
 
 /* ================================================================
- * Nom de fichier — extrait le basename sans extension
+ * Nom de fichier - extrait le basename sans extension
  * ================================================================ */
 static void set_dispname(const char *path)
 {
@@ -454,9 +471,9 @@ static void set_dispname(const char *path)
 }
 
 /* ================================================================
- * stream_open — lance le streaming XACP depuis src_pos
- *   Suppose g_mp3src alloué et g_board/g_fb valides.
- *   Retourne TRUE si le streaming a démarré avec succès.
+ * stream_open - lance le streaming XACP depuis src_pos
+ *   Suppose g_mp3src alloue et g_board/g_fb valides.
+ *   Retourne TRUE si le streaming a demarre avec succes.
  * ================================================================ */
 static BOOL stream_open(ULONG start_pos)
 {
@@ -467,14 +484,14 @@ static BOOL stream_open(ULONG start_pos)
     g_mring = g_fb + XACP_MP3_OFFSET;
     g_pring = g_fb + XACP_PCM_OFFSET;
 
-    /* Init structure de contrôle */
+    /* Init structure de controle */
     memset((void *)g_sc, 0, sizeof(XACP_StreamControl));
     g_sc->mp3_base = BE32(XACP_MP3_OFFSET);
     g_sc->mp3_size = BE32(MP3_RING_SIZE);
     g_sc->pcm_base = BE32(XACP_PCM_OFFSET);
     g_sc->pcm_size = BE32(PCM_RING_SIZE);
 
-    /* Prefill ring MP3 à 75% */
+    /* Prefill ring MP3 a 75% */
     g_wptr        = 0;
     g_srcpos      = start_pos;
     g_prd         = 0;
@@ -499,17 +516,17 @@ static BOOL stream_open(ULONG start_pos)
 
     ZZ_WR(g_board, REG_CMD, OP_STREAM_OPEN);
 
-    /* Attente sample_rate (ARM décode la première frame) */
+    /* Attente sample_rate (ARM decode la premiere frame) */
     { volatile int d = 20000; while (d--); }
     timeout = 0;
     while (g_sc->sample_rate == 0) {
         struct IntuiMessage *msg;
         volatile int d = 500; while (d--);
         if (++timeout > 2000) return FALSE;   /* ~1s timeout */
-        /* Répondre aux events pendant l'attente */
-        while ((msg = (struct IntuiMessage *)GetMsg(g_win->UserPort))) {
+        /* Repondre aux events pendant l'attente */
+        while ((msg = GT_GetIMsg(g_win->UserPort)) != NULL) {
             if (msg->Class == IDCMP_CLOSEWINDOW) g_quit = TRUE;
-            ReplyMsg((struct Message *)msg);
+            GT_ReplyIMsg(msg);
         }
         if (g_quit) return FALSE;
     }
@@ -522,11 +539,11 @@ static BOOL stream_open(ULONG start_pos)
     g_chunk = (g_sr / 50UL) * g_ch * 2UL * MULTIPLIER;
     if (g_chunk > AHI_BUFSIZE) g_chunk = AHI_BUFSIZE;
 
-    /* Estimation initiale de la durée totale
-     * ~417 bytes/frame à 128kbps 44100Hz */
+    /* Estimation initiale de la duree totale
+     * ~417 bytes/frame a 128kbps 44100Hz */
     g_tfest = (ULONG)g_mp3sz / 417UL;
 
-    /* Mise à jour barre progression max */
+    /* Mise a jour barre progression max */
     if (g_gad[GAD_PROGRESS])
         GT_SetGadgetAttrs(g_gad[GAD_PROGRESS], g_win, NULL,
                           GTSL_Max, PROGRESS_MAX,
@@ -545,9 +562,9 @@ static BOOL stream_open(ULONG start_pos)
         w     = BE32(g_sc->pcm_write);
         avail = ring_avail(w, g_prd, PCM_RING_SIZE);
         if (++timeout > 300) return FALSE;
-        while ((msg = (struct IntuiMessage *)GetMsg(g_win->UserPort))) {
+        while ((msg = GT_GetIMsg(g_win->UserPort)) != NULL) {
             if (msg->Class == IDCMP_CLOSEWINDOW) g_quit = TRUE;
-            ReplyMsg((struct Message *)msg);
+            GT_ReplyIMsg(msg);
         }
         if (g_quit) return FALSE;
     }
@@ -560,17 +577,26 @@ static BOOL stream_open(ULONG start_pos)
 
     g_acur  = 0;
     g_anext = 1;
-    send_ahi_chunk(0, buf0, g_chunk);   /* req[0] démarre (ahir_Link=NULL).
+    send_ahi_chunk(0, buf0, g_chunk);   /* req[0] demarre (ahir_Link=NULL).
      * player_tick remplira et enverra req[1] (ahir_Link=req[0]) AVANT le
-     * premier WaitIO — premier enchaînement déjà sans coupure. */
+     * premier WaitIO - premier enchainement deja sans coupure. */
 
     g_state = STATE_PLAYING;
     update_display();
     return TRUE;
 }
 
+/* Forward declarations for the playlist helpers (defined later, used by
+ * player_start and the main IDCMP handler). */
+static void pls_refresh_listview(void);
+static void pls_add_via_asl(void);
+static void pls_play_selected(void);
+static void pls_delete_selected(void);
+static void pls_move_selected(int dir);
+static void pls_clear_all(void);
+
 /* ================================================================
- * stream_close — ferme le streaming XACP et stoppe AHI
+ * stream_close - ferme le streaming XACP et stoppe AHI
  * ================================================================ */
 static void stream_close(void)
 {
@@ -584,7 +610,7 @@ static void stream_close(void)
 }
 
 /* ================================================================
- * player_stop — arrêt complet + libération fichier MP3
+ * player_stop - arret complet + liberation fichier MP3
  * ================================================================ */
 static void player_stop(void)
 {
@@ -604,7 +630,7 @@ static void player_stop(void)
 }
 
 /* ================================================================
- * player_start — charge un fichier et démarre la lecture
+ * player_start - charge un fichier et demarre la lecture
  * ================================================================ */
 static BOOL player_start(int track)
 {
@@ -612,11 +638,14 @@ static BOOL player_start(int track)
     BPTR fh;
 
     if (track < 0 || track >= g_pcount) return FALSE;
-    player_stop();   /* libère l'éventuel fichier précédent */
+    player_stop();   /* libere l'eventuel fichier precedent */
 
     path = g_playlist[track];
     g_cur = track;
     set_dispname(path);
+
+    /* Keep the playlist "*" current marker in sync if the window is open. */
+    if (g_plswin && g_plsgad) pls_refresh_listview();
 
     fh = Open((STRPTR)path, MODE_OLDFILE);
     if (!fh) {
@@ -637,7 +666,7 @@ static BOOL player_start(int track)
 }
 
 /* ================================================================
- * player_seek — cherche dans le fichier courant (fraction 0-PROGRESS_MAX)
+ * player_seek - cherche dans le fichier courant (fraction 0-PROGRESS_MAX)
  * ================================================================ */
 static void player_seek(ULONG level)
 {
@@ -652,8 +681,8 @@ static void player_seek(ULONG level)
 }
 
 /* ================================================================
- * player_tick — une itération de la boucle de lecture
- *   Retourne FALSE si le morceau est terminé.
+ * player_tick - une iteration de la boucle de lecture
+ *   Retourne FALSE si le morceau est termine.
  * ================================================================ */
 static BOOL player_tick(void)
 {
@@ -664,11 +693,11 @@ static BOOL player_tick(void)
 
     if (g_state != STATE_PLAYING) return TRUE;
 
-    /* Lecture fraîche des champs ARM avant le refill */
+    /* Lecture fraiche des champs ARM avant le refill */
     CacheClearU();
     done = (BE32(g_sc->status) == STREAM_DECODE_DONE);
 
-    /* Refill ring MP3 si nécessaire */
+    /* Refill ring MP3 si necessaire */
     if (!g_eofsent && BE32(g_sc->mp3_need_refill)) {
         ULONG rp    = BE32(g_sc->mp3_read);
         ULONG mfree = ring_free(g_wptr, rp, MP3_RING_SIZE);
@@ -689,12 +718,12 @@ static BOOL player_tick(void)
         g_eofsent = TRUE;
     }
 
-    /* Lire disponibilité PCM */
+    /* Lire disponibilite PCM */
     CacheClearU();
     pcm_w = BE32(g_sc->pcm_write);
     avail = ring_avail(pcm_w, g_prd, PCM_RING_SIZE);
 
-    /* Fin de morceau : plus de PCM, drainer g_acur avant d'arrêter */
+    /* Fin de morceau : plus de PCM, drainer g_acur avant d'arreter */
     if (done && avail == 0) {
         if (g_act[g_acur]) {
             WaitIO((struct IORequest *)g_req[g_acur]);
@@ -733,24 +762,24 @@ static BOOL player_tick(void)
      * ORDRE CRITIQUE : remplir g_anext et l'ENVOYER AVANT WaitIO.
      *
      * send_ahi_chunk(g_anext) pose ahir_Link = g_req[g_acur] (en lecture).
-     * AHI enchaîne g_anext → g_acur à niveau interruption, indépendamment
-     * de notre tâche.  Tout ce qui se passe après le SendIO (menu WB,
-     * GT_SetGadgetAttrs, etc.) ne peut plus créer de coupure.
+     * AHI enchaine g_anext  g_acur a niveau interruption, independamment
+     * de notre tache.  Tout ce qui se passe apres le SendIO (menu WB,
+     * GT_SetGadgetAttrs, etc.) ne peut plus creer de coupure.
      * --------------------------------------------------------------- */
     buf = (g_anext == 0) ? g_buf0 : g_buf1;
     ring_copy_out(g_pring, PCM_RING_SIZE, g_prd, buf, chunk);
     g_prd = (g_prd + chunk) % PCM_RING_SIZE;
     g_sc->pcm_read = BE32(g_prd);
 
-    send_ahi_chunk(g_anext, buf, chunk);       /* ← AVANT WaitIO */
+    send_ahi_chunk(g_anext, buf, chunk);       /*  AVANT WaitIO */
 
-    /* Attendre g_acur — g_anext est déjà en file, aucun trou possible */
+    /* Attendre g_acur - g_anext est deja en file, aucun trou possible */
     if (g_act[g_acur]) {
         WaitIO((struct IORequest *)g_req[g_acur]);
         g_act[g_acur] = FALSE;
     }
 
-    /* Cumuler octets MP3 (données fraîches post-WaitIO) */
+    /* Cumuler octets MP3 (donnees fraiches post-WaitIO) */
     CacheClearU();
     {
         ULONG mp3rd = BE32(g_sc->mp3_read);
@@ -761,20 +790,20 @@ static BOOL player_tick(void)
         g_mp3rd_prev   = mp3rd;
     }
 
-    /* Swap : g_acur ← ancien g_anext (maintenant en lecture),
-     *        g_anext ← ancien g_acur (slot libéré pour le prochain tick) */
+    /* Swap : g_acur  ancien g_anext (maintenant en lecture),
+     *        g_anext  ancien g_acur (slot libere pour le prochain tick) */
     { int t = g_acur; g_acur = g_anext; g_anext = t; }
 
-    /* Affichage — peut être lent, g_anext sera rempli au prochain tick */
+    /* Affichage - peut etre lent, g_anext sera rempli au prochain tick */
     update_display();
     return TRUE;
 }
 
 /* ================================================================
- * Icon rendering — defined here, after globals, before callers
+ * Icon rendering - defined here, after globals, before callers
  * ================================================================ */
 
-/* Populate g_btn_img[] — call once before any DrawImage */
+/* Populate g_btn_img[] - call once before any DrawImage */
 static void init_btn_images(void)
 {
     static const UWORD * const src[10] = {
@@ -798,7 +827,7 @@ static void init_btn_images(void)
 
 /* Draw icon bitmaps centred over each transport button.
  * Called after GT_RefreshWindow and after each button GADGETUP.
- * Loop button gets a 3×3 dot indicator when active. */
+ * Loop button gets a 33 dot indicator when active. */
 static void draw_icons(struct Window *win)
 {
     int i;
@@ -812,7 +841,7 @@ static void draw_icons(struct Window *win)
             DrawImage(win->RPort, &g_btn_img[i - 1], ix, iy);
         }
     }
-    /* Loop active indicator: 3×3 dot in bottom-right of loop button face */
+    /* Loop active indicator: 33 dot in bottom-right of loop button face */
     if (g_gad[GAD_LOOP]) {
         WORD bx = g_gad[GAD_LOOP]->LeftEdge + g_gad[GAD_LOOP]->Width  - 5;
         WORD by = g_gad[GAD_LOOP]->TopEdge  + g_gad[GAD_LOOP]->Height - 5;
@@ -822,24 +851,30 @@ static void draw_icons(struct Window *win)
 }
 
 /* ================================================================
- * handle_idcmp — traitement des événements Intuition
+ * handle_idcmp - traitement des evenements Intuition
  * ================================================================ */
-/* Forward declaration (définie après handle_idcmp) */
+/* Forward declaration (definie apres handle_idcmp) */
 static void open_playlist_window(void);
 
 static void handle_idcmp(void)
 {
     struct IntuiMessage *msg;
 
-    while ((msg = (struct IntuiMessage *)GetMsg(g_win->UserPort))) {
+    while ((msg = GT_GetIMsg(g_win->UserPort)) != NULL) {
         ULONG  class = msg->Class;
         UWORD  code  = msg->Code;
         struct Gadget *gad = (struct Gadget *)msg->IAddress;
-        ReplyMsg((struct Message *)msg);
+        GT_ReplyIMsg(msg);
 
         if (class == IDCMP_CLOSEWINDOW) {
             g_quit = TRUE;
             return;
+        }
+
+        if (class == IDCMP_REFRESHWINDOW) {
+            GT_BeginRefresh(g_win);
+            GT_EndRefresh(g_win, TRUE);
+            continue;
         }
 
         if (class == IDCMP_GADGETUP && gad) {
@@ -852,7 +887,13 @@ static void handle_idcmp(void)
                     g_state = STATE_PLAYING;
                     send_ahi_chunk(g_acur, buf, g_chunk);
                 } else if (g_state == STATE_STOPPED && g_pcount > 0) {
-                    int t = (g_cur >= 0 && g_cur < g_pcount) ? g_cur : 0;
+                    int t;
+                    if (g_pls_sel >= 0 && g_pls_sel < g_pcount)
+                        t = g_pls_sel;
+                    else if (g_cur >= 0 && g_cur < g_pcount)
+                        t = g_cur;
+                    else
+                        t = 0;
                     player_start(t);
                 }
                 break;
@@ -879,7 +920,7 @@ static void handle_idcmp(void)
                 break;
 
             case GAD_REW:
-                /* Rewind 30s — utilise bpf (bytes/frame) pour éviter overflow */
+                /* Rewind 30s - utilise bpf (bytes/frame) pour eviter overflow */
                 if (g_state == STATE_PLAYING && g_mp3src && g_mp3_decoded > 0) {
                     ULONG frames = BE32(g_sc->frames_decoded);
                     ULONG bpf    = (frames > 0) ? (g_mp3_decoded / frames) : 417UL;
@@ -907,57 +948,11 @@ static void handle_idcmp(void)
                 break;
 
             case GAD_OPEN: {
-                /* ASL file selector */
-                struct FileRequester *fr;
-                struct TagItem fr_tags[] = {
-                    {ASLFR_TitleText,     (ULONG)"Select MP3"},
-                    {ASLFR_DoMultiSelect, TRUE},
-                    {TAG_END,             0}
-                };
-                fr = AllocAslRequest(ASL_FileRequest, fr_tags);
-                if (fr && AslRequest(fr, NULL)) {
-                    int fi, added = 0;
-                    /* Multi-select path: fr_NumArgs entries in fr_ArgList */
-                    if (fr->fr_NumArgs > 0 && fr->fr_ArgList != NULL) {
-                        for (fi = 0; fi < (int)fr->fr_NumArgs && g_pcount < MAX_PLAYLIST; fi++) {
-                            char *full = (char *)AllocMem(PATH_BUF_SIZE, MEMF_ANY | MEMF_CLEAR);
-                            if (full) {
-                                int dl = (int)strlen(fr->fr_Drawer);
-                                if (dl > PATH_BUF_SIZE - 2) dl = PATH_BUF_SIZE - 2;
-                                memcpy(full, fr->fr_Drawer, (size_t)dl);
-                                if (dl > 0 && full[dl-1] != '/' && full[dl-1] != ':')
-                                    full[dl++] = '/';
-                                strncpy(full + dl, fr->fr_ArgList[fi].wa_Name,
-                                        (size_t)(PATH_BUF_SIZE - 1 - dl));
-                                full[PATH_BUF_SIZE - 1] = '\0';
-                                g_playlist[g_pcount++] = full;
-                                added++;
-                            }
-                        }
-                    }
-                    /* Single-file fallback: use fr_File + fr_Drawer */
-                    if (added == 0 && fr->fr_File && fr->fr_File[0] && g_pcount < MAX_PLAYLIST) {
-                        char *full = (char *)AllocMem(PATH_BUF_SIZE, MEMF_ANY | MEMF_CLEAR);
-                        if (full) {
-                            int dl = (int)strlen(fr->fr_Drawer);
-                            if (dl > PATH_BUF_SIZE - 2) dl = PATH_BUF_SIZE - 2;
-                            memcpy(full, fr->fr_Drawer, (size_t)dl);
-                            if (dl > 0 && full[dl-1] != '/' && full[dl-1] != ':')
-                                full[dl++] = '/';
-                            strncpy(full + dl, fr->fr_File,
-                                    (size_t)(PATH_BUF_SIZE - 1 - dl));
-                            full[PATH_BUF_SIZE - 1] = '\0';
-                            g_playlist[g_pcount++] = full;
-                            added++;
-                        }
-                    }
-                    /* Auto-start first new track if stopped */
-                    if (added > 0 && g_state == STATE_STOPPED) {
-                        int first = g_pcount - added;
-                        player_start(first);
-                    }
-                }
-                if (fr) FreeAslRequest(fr);
+                int before = g_pcount;
+                pls_add_via_asl();
+                /* Auto-start the first newly added track if stopped. */
+                if (g_pcount > before && g_state == STATE_STOPPED)
+                    player_start(before);
                 break;
             }
 
@@ -966,7 +961,7 @@ static void handle_idcmp(void)
                 break;
 
             case GAD_PLS:
-                /* Toggle fenêtre playlist */
+                /* Toggle fenetre playlist */
                 if (g_plswin) {
                     CloseWindow(g_plswin); g_plswin = NULL;
                     if (g_plsglist) { FreeGadgets(g_plsglist); g_plsglist = NULL; }
@@ -976,7 +971,7 @@ static void handle_idcmp(void)
                 break;
 
             case GAD_PROGRESS:
-                /* Seek vers la position cliquée */
+                /* Seek vers la position cliquee */
                 if (g_mp3src && g_mp3sz > 0)
                     player_seek((ULONG)code);
                 break;
@@ -998,17 +993,23 @@ static void handle_idcmp(void)
                     g_state = STATE_PLAYING;
                     send_ahi_chunk(g_acur, buf, g_chunk);
                 } else if (g_state == STATE_STOPPED && g_pcount > 0) {
-                    int t = (g_cur >= 0 && g_cur < g_pcount) ? g_cur : 0;
+                    int t;
+                    if (g_pls_sel >= 0 && g_pls_sel < g_pcount)
+                        t = g_pls_sel;
+                    else if (g_cur >= 0 && g_cur < g_pcount)
+                        t = g_cur;
+                    else
+                        t = 0;
                     player_start(t);
                 }
                 break;
             case 0x45: /* Echap : stop */
                 player_stop();
                 break;
-            case 0x4F: /* Flèche gauche : piste précédente */
+            case 0x4F: /* Fleche gauche : piste precedente */
                 if (g_cur > 0) player_start(g_cur - 1);
                 break;
-            case 0x4E: /* Flèche droite : piste suivante */
+            case 0x4E: /* Fleche droite : piste suivante */
                 if (g_cur < g_pcount - 1) player_start(g_cur + 1);
                 break;
             }
@@ -1017,10 +1018,207 @@ static void handle_idcmp(void)
 }
 
 /* ================================================================
- * build_gui — construit la fenêtre et les gadgets
+ * Playlist editing helpers
  * ================================================================ */
+
+/* File name part of a full path (after the last '/' or ':'). */
+static const char *pls_file_leaf(const char *p)
+{
+    const char *s = p;
+    const char *last = p;
+    if (!p) return "";
+    while (*s) {
+        if (*s == '/' || *s == ':') last = s + 1;
+        s++;
+    }
+    return last;
+}
+
+/* Rebuild the exec List from g_playlist[], with a leading ASCII marker showing
+ * the selected row and the row currently playing (g_cur). */
+static void pls_rebuild_exec_list(void)
+{
+    int i;
+
+    g_pls_execlist.lh_Head     = (struct Node *)&g_pls_execlist.lh_Tail;
+    g_pls_execlist.lh_Tail     = NULL;
+    g_pls_execlist.lh_TailPred = (struct Node *)&g_pls_execlist;
+
+    for (i = 0; i < g_pcount; i++) {
+        const char *prefix;
+        if (i == g_cur && i == g_pls_sel)      prefix = "*> ";
+        else if (i == g_cur)                   prefix = "*  ";
+        else if (i == g_pls_sel)               prefix = ">  ";
+        else                                   prefix = "   ";
+
+        g_pls_display[i][0] = '\0';
+        strncpy(g_pls_display[i], prefix, PLS_DISP_MAX - 1);
+        strncpy(g_pls_display[i] + 3, pls_file_leaf(g_playlist[i]),
+                PLS_DISP_MAX - 1 - 3);
+        g_pls_display[i][PLS_DISP_MAX - 1] = '\0';
+
+        g_pls_nodes[i].ln_Name = g_pls_display[i];
+        g_pls_nodes[i].ln_Type = NT_USER;
+        g_pls_nodes[i].ln_Pri  = 0;
+        AddTail(&g_pls_execlist, &g_pls_nodes[i]);
+    }
+}
+
+/* Detach the list, rebuild it, re-attach. Never modify the List while it is
+ * attached to the gadget. Safe whether or not the window is open. */
+static void pls_refresh_listview(void)
+{
+    if (g_plsgad && g_plswin)
+        GT_SetGadgetAttrs(g_plsgad, g_plswin, NULL,
+                          GTLV_Labels, (ULONG)~0UL, TAG_END);
+
+    pls_rebuild_exec_list();
+
+    if (g_plsgad && g_plswin) {
+        GT_SetGadgetAttrs(g_plsgad, g_plswin, NULL,
+                          GTLV_Labels, (ULONG)&g_pls_execlist, TAG_END);
+        GT_RefreshWindow(g_plswin, NULL);
+    }
+}
+
+/* Append one full "drawer/file" path to the playlist. */
+static BOOL pls_append_path(const char *full)
+{
+    char *slot;
+    if (g_pcount >= MAX_PLAYLIST) return FALSE;
+    slot = (char *)AllocMem(PATH_BUF_SIZE, MEMF_ANY | MEMF_CLEAR);
+    if (!slot) return FALSE;
+    strncpy(slot, full, PATH_BUF_SIZE - 1);
+    slot[PATH_BUF_SIZE - 1] = '\0';
+    g_playlist[g_pcount++] = slot;
+    return TRUE;
+}
+
+/* ASL multi-select requester; append every chosen file. */
+static void pls_add_via_asl(void)
+{
+    struct FileRequester *fr;
+    int old_count = g_pcount;
+    struct TagItem fr_tags[] = {
+        {ASLFR_TitleText,     (ULONG)"Add MP3 files to playlist"},
+        {ASLFR_DoMultiSelect, TRUE},
+        {TAG_END,             0}
+    };
+
+    fr = AllocAslRequest(ASL_FileRequest, fr_tags);
+    if (fr && AslRequest(fr, NULL)) {
+        char full[PATH_BUF_SIZE];
+        int  fi;
+        if (fr->fr_NumArgs > 0 && fr->fr_ArgList != NULL) {
+            for (fi = 0; fi < (int)fr->fr_NumArgs && g_pcount < MAX_PLAYLIST;
+                 fi++) {
+                int dl = (int)strlen(fr->fr_Drawer);
+                if (dl > PATH_BUF_SIZE - 2) dl = PATH_BUF_SIZE - 2;
+                memcpy(full, fr->fr_Drawer, (size_t)dl);
+                if (dl > 0 && full[dl-1] != '/' && full[dl-1] != ':')
+                    full[dl++] = '/';
+                strncpy(full + dl, fr->fr_ArgList[fi].wa_Name,
+                        (size_t)(PATH_BUF_SIZE - 1 - dl));
+                full[PATH_BUF_SIZE - 1] = '\0';
+                pls_append_path(full);
+            }
+        } else if (fr->fr_File && fr->fr_File[0] && g_pcount < MAX_PLAYLIST) {
+            int dl = (int)strlen(fr->fr_Drawer);
+            if (dl > PATH_BUF_SIZE - 2) dl = PATH_BUF_SIZE - 2;
+            memcpy(full, fr->fr_Drawer, (size_t)dl);
+            if (dl > 0 && full[dl-1] != '/' && full[dl-1] != ':')
+                full[dl++] = '/';
+            strncpy(full + dl, fr->fr_File,
+                    (size_t)(PATH_BUF_SIZE - 1 - dl));
+            full[PATH_BUF_SIZE - 1] = '\0';
+            pls_append_path(full);
+        }
+    }
+    if (fr) FreeAslRequest(fr);
+    if (g_pls_sel < 0 && g_pcount > old_count)
+        g_pls_sel = old_count;
+    pls_refresh_listview();
+}
+
+/* Delete the selected entry; shift the rest down; keep g_cur consistent. */
+static void pls_delete_selected(void)
+{
+    int i;
+    int idx = g_pls_sel;
+    if (idx < 0 || idx >= g_pcount) return;
+
+    if (idx == g_cur) {
+        player_stop();
+        g_cur = -1;
+    } else if (g_cur > idx) {
+        g_cur--;
+    }
+
+    if (g_playlist[idx]) {
+        FreeMem(g_playlist[idx], PATH_BUF_SIZE);
+        g_playlist[idx] = NULL;
+    }
+    for (i = idx; i < g_pcount - 1; i++)
+        g_playlist[i] = g_playlist[i + 1];
+    g_playlist[g_pcount - 1] = NULL;
+    g_pcount--;
+
+    if (g_pcount <= 0)        g_pls_sel = -1;
+    else if (idx >= g_pcount) g_pls_sel = g_pcount - 1;
+    else                      g_pls_sel = idx;
+
+    pls_refresh_listview();
+}
+
+/* Swap the selected entry with its neighbour (dir = -1 up, +1 down). */
+static void pls_move_selected(int dir)
+{
+    int idx = g_pls_sel;
+    int dst;
+    char *tmp;
+    if (idx < 0 || idx >= g_pcount) return;
+    dst = idx + dir;
+    if (dst < 0 || dst >= g_pcount) return;
+
+    tmp             = g_playlist[idx];
+    g_playlist[idx] = g_playlist[dst];
+    g_playlist[dst] = tmp;
+
+    if (g_cur == idx)       g_cur = dst;
+    else if (g_cur == dst)  g_cur = idx;
+
+    g_pls_sel = dst;
+    pls_refresh_listview();
+}
+
+/* Remove every entry. */
+static void pls_clear_all(void)
+{
+    int i;
+    player_stop();
+    for (i = 0; i < g_pcount; i++) {
+        if (g_playlist[i]) {
+            FreeMem(g_playlist[i], PATH_BUF_SIZE);
+            g_playlist[i] = NULL;
+        }
+    }
+    g_pcount  = 0;
+    g_pls_sel = -1;
+    g_cur     = -1;
+    pls_refresh_listview();
+}
+
+/* Play the selected row (the only normal way to start from the playlist;
+ * a row click just selects). */
+static void pls_play_selected(void)
+{
+    if (g_pls_sel < 0 || g_pls_sel >= g_pcount) return;
+    player_start(g_pls_sel);   /* sets g_cur */
+    pls_refresh_listview();
+}
+
 /* ================================================================
- * Playlist window — LISTVIEW_KIND GadTools
+ * Playlist window - LISTVIEW_KIND GadTools
  * ================================================================ */
 static void open_playlist_window(void)
 {
@@ -1029,25 +1227,15 @@ static void open_playlist_window(void)
     struct TagItem   lv_tags[4];
     struct TagItem   win_tags[11];
     UWORD bx, by, ih;
-    int   i;
 
-    if (g_plswin) return;                   /* déjà ouverte */
+    if (g_plswin) return;
     if (!g_scr || !g_vi) return;
 
-    /* Initialise exec List (NewList inline — no prototype in this NDK) */
-    g_pls_execlist.lh_Head     = (struct Node *)&g_pls_execlist.lh_Tail;
-    g_pls_execlist.lh_Tail     = NULL;
-    g_pls_execlist.lh_TailPred = (struct Node *)&g_pls_execlist;
-    for (i = 0; i < g_pcount; i++) {
-        g_pls_nodes[i].ln_Name = g_playlist[i];   /* chemin complet */
-        g_pls_nodes[i].ln_Type = NT_USER;
-        g_pls_nodes[i].ln_Pri  = 0;
-        AddTail(&g_pls_execlist, &g_pls_nodes[i]);
-    }
+    pls_rebuild_exec_list();
 
     bx = g_scr->WBorLeft;
     by = g_scr->WBorTop + g_scr->Font->ta_YSize + 1;
-    ih = 100;   /* hauteur zone listview */
+    ih = 100;
 
     prev = CreateContext(&g_plsglist);
     if (!prev) return;
@@ -1058,31 +1246,59 @@ static void open_playlist_window(void)
     ng.ng_Height     = ih;
     ng.ng_GadgetText = NULL;
     ng.ng_TextAttr   = g_scr->Font;
-    ng.ng_GadgetID   = 1;
+    ng.ng_GadgetID   = PLG_LIST;
     ng.ng_Flags      = 0;
     ng.ng_VisualInfo = g_vi;
 
     lv_tags[0].ti_Tag  = GTLV_Labels;       lv_tags[0].ti_Data = (ULONG)&g_pls_execlist;
     lv_tags[1].ti_Tag  = GTLV_ScrollWidth;  lv_tags[1].ti_Data = 16;
-    lv_tags[2].ti_Tag  = GTLV_ShowSelected; lv_tags[2].ti_Data = 0;
+    lv_tags[2].ti_Tag  = TAG_END;           lv_tags[2].ti_Data = 0;
     lv_tags[3].ti_Tag  = TAG_END;           lv_tags[3].ti_Data = 0;
 
     prev = g_plsgad = CreateGadgetA(LISTVIEW_KIND, prev, &ng, lv_tags);
     if (!prev) { FreeGadgets(g_plsglist); g_plsglist = NULL; return; }
 
-    win_tags[0].ti_Tag  = WA_Left;      win_tags[0].ti_Data = 40;
-    win_tags[1].ti_Tag  = WA_Top;       win_tags[1].ti_Data = 160;
-    win_tags[2].ti_Tag  = WA_Width;     win_tags[2].ti_Data = 300;
-    win_tags[3].ti_Tag  = WA_Height;    win_tags[3].ti_Data = (ULONG)(by + ih + g_scr->WBorBottom + 2);
-    win_tags[4].ti_Tag  = WA_Title;     win_tags[4].ti_Data = (ULONG)"Playlist";
-    win_tags[5].ti_Tag  = WA_Gadgets;   win_tags[5].ti_Data = (ULONG)g_plsglist;
-    win_tags[6].ti_Tag  = WA_Flags;     win_tags[6].ti_Data =
-                           WFLG_DRAGBAR | WFLG_CLOSEGADGET | WFLG_DEPTHGADGET |
-                           WFLG_ACTIVATE | WFLG_SMART_REFRESH;
-    win_tags[7].ti_Tag  = WA_IDCMP;     win_tags[7].ti_Data =
-                           IDCMP_CLOSEWINDOW | IDCMP_GADGETUP;
-    win_tags[8].ti_Tag  = WA_PubScreen; win_tags[8].ti_Data = (ULONG)g_scr;
-    win_tags[9].ti_Tag  = TAG_END;      win_tags[9].ti_Data = 0;
+    /* Row of buttons under the listview: Play | Add | Del | Up | Dn | Clear */
+    {
+        static const char *labels[6] =
+            { "Play", "Add", "Del", "Up", "Dn", "Clear" };
+        static const UWORD ids[6] =
+            { PLG_PLAY, PLG_ADD, PLG_DEL, PLG_UP, PLG_DOWN, PLG_CLEAR };
+        UWORD listw = (UWORD)(300 - bx - g_scr->WBorRight);
+        UWORD gap   = 4;
+        UWORD bw    = (UWORD)((listw - 5 * gap) / 6);
+        UWORD bh    = (UWORD)(g_scr->Font->ta_YSize + 6);
+        UWORD btop  = (UWORD)(by + ih + 4);
+        int   k;
+
+        for (k = 0; k < 6; k++) {
+            ng.ng_LeftEdge   = (WORD)(bx + k * (bw + gap));
+            ng.ng_TopEdge    = (WORD)btop;
+            ng.ng_Width      = bw;
+            ng.ng_Height     = bh;
+            ng.ng_GadgetText = (UBYTE *)labels[k];
+            ng.ng_GadgetID   = ids[k];
+            ng.ng_Flags      = 0;
+            prev = CreateGadgetA(BUTTON_KIND, prev, &ng, NULL);
+            g_plsbtn[ids[k]] = prev;
+            if (!prev) { FreeGadgets(g_plsglist); g_plsglist = NULL; return; }
+        }
+
+        win_tags[0].ti_Tag  = WA_Left;      win_tags[0].ti_Data = 40;
+        win_tags[1].ti_Tag  = WA_Top;       win_tags[1].ti_Data = 160;
+        win_tags[2].ti_Tag  = WA_Width;     win_tags[2].ti_Data = 300;
+        win_tags[3].ti_Tag  = WA_Height;    win_tags[3].ti_Data =
+                               (ULONG)(btop + bh + g_scr->WBorBottom + 2);
+        win_tags[4].ti_Tag  = WA_Title;     win_tags[4].ti_Data = (ULONG)"Playlist XX19";
+        win_tags[5].ti_Tag  = WA_Gadgets;   win_tags[5].ti_Data = (ULONG)g_plsglist;
+        win_tags[6].ti_Tag  = WA_Flags;     win_tags[6].ti_Data =
+                               WFLG_DRAGBAR | WFLG_CLOSEGADGET | WFLG_DEPTHGADGET |
+                               WFLG_ACTIVATE | WFLG_SMART_REFRESH;
+        win_tags[7].ti_Tag  = WA_IDCMP;     win_tags[7].ti_Data =
+                               IDCMP_CLOSEWINDOW | IDCMP_REFRESHWINDOW | LISTVIEWIDCMP;
+        win_tags[8].ti_Tag  = WA_PubScreen; win_tags[8].ti_Data = (ULONG)g_scr;
+        win_tags[9].ti_Tag  = TAG_END;      win_tags[9].ti_Data = 0;
+    }
 
     g_plswin = OpenWindowTagList(NULL, win_tags);
     if (!g_plswin) {
@@ -1092,34 +1308,56 @@ static void open_playlist_window(void)
     GT_RefreshWindow(g_plswin, NULL);
 }
 
-/* Traitement IDCMP de la fenêtre playlist — appelé dans la boucle principale */
+/* Playlist window IDCMP handling -- called from the main loop */
 static void handle_pls_idcmp(void)
 {
     struct IntuiMessage *msg;
     if (!g_plswin) return;
 
-    while ((msg = (struct IntuiMessage *)GetMsg(g_plswin->UserPort))) {
+    while ((msg = GT_GetIMsg(g_plswin->UserPort)) != NULL) {
         ULONG class = msg->Class;
         UWORD code  = msg->Code;
-        ReplyMsg((struct Message *)msg);
+        struct Gadget *gad = (struct Gadget *)msg->IAddress;
+        UWORD gid = gad ? gad->GadgetID : 0xffff;
+        GT_ReplyIMsg(msg);
 
+        if (class == IDCMP_REFRESHWINDOW) {
+            GT_BeginRefresh(g_plswin);
+            GT_EndRefresh(g_plswin, TRUE);
+            continue;
+        }
         if (class == IDCMP_CLOSEWINDOW) {
             CloseWindow(g_plswin); g_plswin = NULL;
             if (g_plsglist) { FreeGadgets(g_plsglist); g_plsglist = NULL; }
+            g_plsgad = NULL;
+            memset(g_plsbtn, 0, sizeof(g_plsbtn));
             return;
         }
-        if (class == IDCMP_GADGETUP && (int)code < g_pcount) {
-            player_start((int)code);
-            /* Mettre en surbrillance la piste courante */
-            if (g_plsgad && g_plswin)
-                GT_SetGadgetAttrs(g_plsgad, g_plswin, NULL,
-                                  GTLV_Selected, (ULONG)code, TAG_END);
+
+        if (class == IDCMP_GADGETUP) {
+            /* LISTVIEW row click: msg->Code is the row index. Select only. */
+            if (gad == g_plsgad || gid == PLG_LIST) {
+                if ((int)code >= 0 && (int)code < g_pcount) {
+                    g_pls_sel = (int)code;
+                    pls_refresh_listview();
+                }
+                continue;
+            }
+            switch (gid) {
+            case PLG_PLAY:  pls_play_selected();    break;
+            case PLG_ADD:   pls_add_via_asl();      break;
+            case PLG_DEL:   pls_delete_selected();  break;
+            case PLG_UP:    pls_move_selected(-1);  break;
+            case PLG_DOWN:  pls_move_selected(+1);  break;
+            case PLG_CLEAR: pls_clear_all();        break;
+            default: break;
+            }
         }
     }
 }
 
 /* ================================================================
- * build_gui — construit la fenêtre et les gadgets
+ * build_gui - construit la fenetre et les gadgets
  * ================================================================ */
 static BOOL build_gui(void)
 {
@@ -1147,23 +1385,23 @@ static BOOL build_gui(void)
     /* Hauteur d'une ligne de texte */
     g_th = fh + 2;
 
-    /* Positions des lignes texte (coord. fenêtre absolues) */
+    /* Positions des lignes texte (coord. fenetre absolues) */
     g_tx   = bx + 2;
     g_ty[0] = by + 2;
     g_ty[1] = g_ty[0] + g_th;
     g_ty[2] = g_ty[1] + g_th;
 
-    /* Progress slider y = après les 3 lignes texte + petit gap */
+    /* Progress slider y = apres les 3 lignes texte + petit gap */
     UWORD prog_y = g_ty[2] + g_th + 2;
     UWORD btn_y  = prog_y + 14;
 
     btn_w = (iw - 9 * 2) / 10; /* 10 boutons avec 2px de gap */
     btn_h = 12;
 
-    /* btn_y est déjà absolu (inclut by) — hauteur fenêtre = bas des boutons + bord bas */
+    /* btn_y est deja absolu (inclut by) - hauteur fenetre = bas des boutons + bord bas */
     win_h = (int)btn_y + (int)btn_h + (int)g_scr->WBorBottom + 4;
 
-    /* --- Création de la liste de gadgets --- */
+    /* --- Creation de la liste de gadgets --- */
     prev = CreateContext(&g_glist);
     if (!prev) goto fail;
 
@@ -1190,7 +1428,7 @@ static BOOL build_gui(void)
     }
     if (!prev) goto fail;
 
-    /* 10 transport buttons — no text label (icons drawn separately) */
+    /* 10 transport buttons - no text label (icons drawn separately) */
     for (i = 1; i <= 10; i++) {
         ng.ng_LeftEdge   = bx + 2 + (UWORD)((i - 1) * (btn_w + 2));
         ng.ng_TopEdge    = btn_y;
@@ -1205,7 +1443,7 @@ static BOOL build_gui(void)
         if (!prev) goto fail;
     }
 
-    /* Ouvrir la fenêtre */
+    /* Ouvrir la fenetre */
     win_tags[0].ti_Tag  = WA_Left;       win_tags[0].ti_Data = 40;
     win_tags[1].ti_Tag  = WA_Top;        win_tags[1].ti_Data = 40;
     win_tags[2].ti_Tag  = WA_Width;      win_tags[2].ti_Data = WIN_WIDTH;
@@ -1216,7 +1454,8 @@ static BOOL build_gui(void)
                             WFLG_DRAGBAR | WFLG_CLOSEGADGET | WFLG_DEPTHGADGET |
                             WFLG_ACTIVATE | WFLG_SMART_REFRESH;
     win_tags[7].ti_Tag  = WA_IDCMP;      win_tags[7].ti_Data =
-                            IDCMP_CLOSEWINDOW | IDCMP_GADGETUP | IDCMP_RAWKEY;
+                            IDCMP_CLOSEWINDOW | IDCMP_REFRESHWINDOW |
+                            IDCMP_GADGETUP | IDCMP_RAWKEY;
     win_tags[8].ti_Tag  = WA_PubScreen;  win_tags[8].ti_Data = (ULONG)g_scr;
     win_tags[9].ti_Tag  = TAG_END;       win_tags[9].ti_Data = 0;
 
@@ -1231,7 +1470,7 @@ static BOOL build_gui(void)
     g_iw = (WORD)(g_win->Width - g_win->BorderLeft - g_win->BorderRight);
 
     UnlockPubScreen(NULL, g_scr);
-    /* g_scr reste valide tant que la fenêtre est ouverte */
+    /* g_scr reste valide tant que la fenetre est ouverte */
     return TRUE;
 
 fail:
@@ -1243,7 +1482,7 @@ fail:
 }
 
 /* ================================================================
- * init_ahi — ouvre ahi.device, prépare 2 AHIRequest
+ * init_ahi - ouvre ahi.device, prepare 2 AHIRequest
  * ================================================================ */
 static BOOL init_ahi(void)
 {
@@ -1286,10 +1525,10 @@ int main(int argc, char *argv[])
 {
     int rc = 0, i;
 
-    /* Priority 20 — matches input.device, prevents preemption by WB menus */
+    /* Priority 20 - matches input.device, prevents preemption by WB menus */
     SetTaskPri(FindTask(NULL), 20);
 
-    /* Librairies — IntuitionBase/GfxBase ont leurs propres struct dans le NDK */
+    /* Librairies - IntuitionBase/GfxBase ont leurs propres struct dans le NDK */
     IntuitionBase = (struct IntuitionBase *)OpenLibrary("intuition.library", 37);
     GfxBase       = (struct GfxBase *)      OpenLibrary("graphics.library",  37);
     GadToolsBase  =                         OpenLibrary("gadtools.library",  37);
@@ -1327,7 +1566,7 @@ int main(int argc, char *argv[])
         rc = 10; goto bye_ahi;
     }
 
-    /* Playlist initiale depuis argv — allocation taille fixe PATH_BUF_SIZE */
+    /* Playlist initiale depuis argv - allocation taille fixe PATH_BUF_SIZE */
     for (i = 1; i < argc && g_pcount < MAX_PLAYLIST; i++) {
         char *s = (char *)AllocMem(PATH_BUF_SIZE, MEMF_ANY | MEMF_CLEAR);
         if (s) {
@@ -1341,7 +1580,7 @@ int main(int argc, char *argv[])
     draw_row(1, "ZZPlayGUI XX16 / Xanxi 2026");
     draw_row(2, "");
 
-    /* Démarrage automatique si playlist fournie */
+    /* Demarrage automatique si playlist fournie */
     if (g_pcount > 0) {
         g_cur = 0;
         player_start(0);
@@ -1354,7 +1593,7 @@ int main(int argc, char *argv[])
         if (g_state == STATE_PLAYING) {
             BOOL cont = player_tick();
             if (!cont && !g_quit) {
-                /* Fin de piste — avancement automatique */
+                /* Fin de piste - avancement automatique */
                 if (g_cur < g_pcount - 1) {
                     player_start(g_cur + 1);
                 } else if (g_loop && g_pcount > 0) {
@@ -1368,7 +1607,7 @@ int main(int argc, char *argv[])
                 }
             }
         } else {
-            /* Arrêté ou en pause : attendre événement fenêtre principale + playlist */
+            /* Arrete ou en pause : attendre evenement fenetre principale + playlist */
             ULONG sigs = 1L << g_win->UserPort->mp_SigBit;
             if (g_plswin)
                 sigs |= 1L << g_plswin->UserPort->mp_SigBit;
@@ -1386,7 +1625,7 @@ int main(int argc, char *argv[])
     for (i = 0; i < g_pcount; i++)
         if (g_playlist[i]) { FreeMem(g_playlist[i], PATH_BUF_SIZE); g_playlist[i] = NULL; }
 
-    /* Fermer la fenêtre playlist si ouverte */
+    /* Fermer la fenetre playlist si ouverte */
     if (g_plswin) { CloseWindow(g_plswin); g_plswin = NULL; }
     if (g_plsglist) { FreeGadgets(g_plsglist); g_plsglist = NULL; }
 
