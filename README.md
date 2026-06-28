@@ -327,3 +327,17 @@ XACP / Xanxi, 2026.
 Special thanks to Antony Mo for external testing and feedback during the XACP development cycle.
 
 Special thanks to the Amiga and ZZ9000 communities for testing, feedback and technical inspiration.
+
+
+## Source availability
+
+This repository currently publishes the XACP v1.5 documentation baseline, memory-map definitions, SDK headers, application documentation and selected release files.
+
+Some historical application and firmware sources are still being cleaned up before publication.
+
+For this reason, the current v1.5.0 package should be considered a **public binary / documentation baseline**, not yet a complete source release of every historical Xanxi ZZ9000 application.
+
+Source publication will be handled progressively, application by application, as the code is cleaned up and third-party licensing requirements are reviewed.
+
+Do not assume that every binary mentioned in the documentation has its complete corresponding source code published in this repository yet.
+
