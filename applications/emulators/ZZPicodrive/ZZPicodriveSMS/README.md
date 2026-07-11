@@ -165,8 +165,6 @@ please report:
 The source code for the ZZ9000 / Amiga port will be made available after
 cleanup.
 
-This cleanup step is only meant to separate release code from temporary
-debugging code and work-in-progress experiments.
 
 ## Credits
 
