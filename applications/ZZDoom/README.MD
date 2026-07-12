@@ -1,10 +1,33 @@
-# ZZDoom for ZZ9000
+# ZZDoom for ZZ9000 V1.1
 
 **ZZDoom** is a `doomgeneric`-based Doom port for Amiga systems equipped with the **MNT ZZ9000**.
 
 It is not a normal 68k Doom port. The Doom engine runs on the ZZ9000’s ARM Core1, while AmigaOS handles the system integration: RTG display, input, AHI sound, CAMD music, file access and savegames.
 
-This first public release is fully playable and includes the essential pieces needed for a useful Amiga/ZZ9000 build: video, controls, sound effects, MIDI music path, save/load and low 68k CPU usage.
+This public release is fully playable and includes the essential pieces needed for a useful Amiga/ZZ9000 build: video, controls, sound effects, MIDI music path, save/load and low 68k CPU usage.
+
+---
+
+## Changes in version 1.1
+
+* Fixed `OpenScreen failed` with recent Individual Computers Picasso96 versions.
+* Added more compatible Picasso96 screen opening.
+* Mouse pointer is now hidden during gameplay.
+* Fixed mouse button handling to avoid stuck fire/strafe buttons.
+* Left mouse button: fire.
+* Right mouse button: strafe.
+* No changes to WAD support, savegames, AHI sound, CAMD music, or ARM Core1 Doom engine.
+
+Requires the matching XACP-compatible ZZ9000 firmware and `zz9000.card`.
+
+Firmware/card package:
+
+```
+https://github.com/Xanxi-Amiga/XACP-V1/releases/tag/XX19_firmware
+
+```
+
+Do not mix firmware/card/executables from different releases.
 
 ---
 
