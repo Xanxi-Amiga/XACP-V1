@@ -147,24 +147,22 @@ third-party license notice.
 
 # Corresponding source
 
-The source package accompanying a ZZRastan binary release is intended
-to correspond exactly to that binary release.
+The source distributed with ZZRastan corresponds to the ARM Core1
+blob included in the same release.
 
-It includes, as applicable:
+It includes:
 
-- ZZRastan Amiga-side source
 - ZZRastan ARM Core1 source
 - shared protocol and memory-map headers
 - linker scripts
 - build scripts
 - modified third-party source
 - CPU-core configuration/generation files
-- other source necessary to reproduce the distributed binary
+- other source necessary to reproduce the Core1 blob
 
-The corresponding source is version-specific.
-
-Source supplied for one ZZRastan release should not be assumed to
-correspond to a different binary release.
+The Amiga 68k launcher and GUI are separate programs. Their source
+code is not part of the corresponding source distribution for the
+Core1 blob.
 
 ---
 
