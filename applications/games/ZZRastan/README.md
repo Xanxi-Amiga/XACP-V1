@@ -68,7 +68,7 @@ emulation runs on the ZZ9000 ARM Core1.
 ## Requirements
 
 - Amiga with MNT ZZ9000.
-- Matching XACP-compatible ZZ9000 firmware and `zz9000.card`.
+- Matching XACP-compatible ZZ9000 firmware (XX19 or later version) and `zz9000.card`.
 - Picasso96 / RTG.
 - AHI.
 - A legal dump of a supported Rastan arcade ROM set.
@@ -162,42 +162,9 @@ with earlier development builds.
 ## Save states
 
 Save-state support is the only feature still under final validation at the time
-this README draft was prepared.
+this README was prepared.
+Save states are not included in ZZRastan 1.0 and will appear in a later version.
 
-**Before publishing v1.0, replace this section with one of the following:**
-
-If validated:
-
-```text
-Save states are supported and are tied to the exact matching ZZRastan/Core1
-release build and ROM set.
-```
-
-If not included:
-
-```text
-Save states are not included in ZZRastan 1.0.
-```
-
-Do not claim save-state compatibility across different blobs or ROM sets unless
-that behavior has been explicitly implemented and tested.
-
----
-
-## Source
-
-The corresponding source snapshot for the release belongs in:
-
-```text
-Source/
-```
-
-The source tree should be the **exact tree used to build the public executable and
-Core1 blob**. Avoid cosmetic restructuring after the release binaries are built.
-
-See `Source/README.md`.
-
----
 
 ## Licensing
 
