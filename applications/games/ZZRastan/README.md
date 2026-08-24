@@ -108,7 +108,7 @@ Expected release layout:
 ZZRastan/
   ZZRastan
   ZZRastan.info
-  zzrastan_core1.bin
+  zzrastan.bin
   README.md
   LICENSES/
   roms/
@@ -127,8 +127,8 @@ Current validated keyboard controls:
 
 ```text
 Cursor keys   Move
-A             Jump
-S             Attack
+A             Attack
+S             Jump
 1             Start
 5             Coin
 P             Pause
@@ -136,9 +136,6 @@ T             Infinite-lives trainer
 ```
 
 Two-button DB9 joystick and supported USB game controllers can also be used.
-
-The final README should be checked against the frozen release source before the
-1.0 tag in case the launcher GUI changes any user-facing control or path.
 
 ---
 
