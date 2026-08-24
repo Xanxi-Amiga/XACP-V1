@@ -130,7 +130,21 @@ Any modifications made to FBNeo-derived source that are distributed
 with ZZRastan are included in the corresponding ZZRastan source release.
 
 ---
+# ymfm
 
+ZZRastan also links the ymfm Yamaha FM emulation library by Aaron Giles.
+
+ymfm is distributed under the BSD 3-Clause License.
+
+The exact revision used by ZZRastan 1.0 is:
+
+    81aec25ccbb98f4873a255f7551ac4dadac59b4a
+
+The license is reproduced in:
+
+    ymfm-LICENSE.txt
+
+---    
 # Other third-party components
 
 Any additional third-party source present in the final ZZRastan build
