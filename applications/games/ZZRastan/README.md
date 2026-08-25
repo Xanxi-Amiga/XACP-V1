@@ -1,11 +1,14 @@
 # ZZRastan for ZZ9000
 
-**ZZRastan** is a standalone recreation of the original **Rastan** arcade hardware
-for Amiga systems equipped with an **MNT ZZ9000**.
+**ZZRastan** is a standalone recreation of the original **Rastan** arcade
+hardware for classic Amiga systems equipped with an **MNT ZZ9000**.
 
-It is not a normal 68k game port. The arcade machine is emulated on the ZZ9000
-ARM Core1 while AmigaOS handles the host-side integration: program launch,
-Picasso96/RTG display, keyboard/joystick input and AHI audio.
+It is not a normal 68k game port. The arcade CPUs and hardware are emulated on
+the ZZ9000 ARM Cortex-A9 Core1, while AmigaOS handles the host-side integration:
+program launch, Picasso96/RTG display, keyboard/joystick input and AHI audio.
+
+**ZZRastan is freeware for non-commercial use. It is not open-source software
+as a whole.**
 
 No commercial game ROMs are included.
 
@@ -13,34 +16,36 @@ No commercial game ROMs are included.
 
 ## Features
 
-- Original Rastan arcade program executed through a 68000 CPU core on ZZ9000 Core1.
-- Z80 sound CPU emulation.
-- Taito-style tilemap and sprite hardware recreation.
-- YM2151 FM sound and MSM5205 ADPCM.
-- Faithful mono audio path, matching the original game's mono routing.
-- Approximately 60 Hz game logic with smooth RTG output.
-- Automatic support for the validated **World** and **Japan** ROM sets.
-- Keyboard input.
-- Two-button Amiga DB9 joystick support.
-- USB game-controller support through AmigaOS.
-- Keyboard, DB9 and USB controls can be used without selecting an exclusive input mode.
-- Pause function.
-- Optional infinite-lives trainer.
-- Clean stop and relaunch of the ARM Core1 application.
+- Original Rastan arcade 68000 program executed through Cyclone on ZZ9000 Core1
+- CZ80 Z80 sound CPU emulation
+- Taito tilemap and sprite hardware recreation
+- YM2151 FM sound
+- MSM5205 ADPCM sound
+- Faithful mono audio path
+- Approximately 60 Hz game logic with smooth RTG output
+- Rastan World and Rastan Saga Japan ROM sets supported
+- Keyboard input
+- Two-button Amiga DB9 joystick support
+- USB game-controller support through AmigaOS
+- Keyboard, DB9 and USB controls can be used simultaneously
+- Pause
+- Optional infinite-lives trainer
+- Clean Core1 stop and relaunch
 
-Hardware testing includes a **68030/25** Amiga, where the game was reported smooth.
+Hardware testing includes a **68030/25** Amiga, where the game is smooth.
 Slower 68030 systems are not currently guaranteed.
+
+Save states are not included in ZZRastan 1.0.
 
 ---
 
 ## Architecture
 
-ZZRastan uses a split Amiga/ZZ9000 architecture:
-
 ```text
 Amiga 68k side
   |
-  |-- launcher / Workbench integration
+  |-- proprietary launcher
+  |-- proprietary GUI
   |-- Picasso96 / RTG display
   |-- keyboard + DB9 + USB input
   |-- AHI audio playback
@@ -60,22 +65,21 @@ ZZ9000 ARM Core1                     |
   +----------------------------------+
 ```
 
-The Amiga CPU does not emulate the Rastan arcade machine itself. The compute-heavy
-emulation runs on the ZZ9000 ARM Core1.
+The Amiga CPU does not emulate the Rastan arcade machine itself. The
+compute-heavy emulation runs on the ZZ9000 ARM Core1.
 
 ---
 
 ## Requirements
 
-- Amiga with MNT ZZ9000.
-- Matching XACP-compatible ZZ9000 firmware (XX19 or later version) and `zz9000.card`.
-- Picasso96 / RTG.
-- AHI.
-- A legal dump of a supported Rastan arcade ROM set.
-- Minimum hardware actually validated so far: **68030 at 25 MHz**.
+- Classic Amiga running AmigaOS 3.x
+- MNT ZZ9000
+- XACP-compatible ZZ9000 firmware and matching `zz9000.card`
+- Picasso96 / RTG
+- AHI
+- A legally obtained supported Rastan arcade ROM set
 
-Do not mix unrelated firmware, `zz9000.card` and application packages unless that
-combination has been explicitly tested.
+Minimum hardware actually validated so far: **68030 at 25 MHz**.
 
 ---
 
@@ -84,106 +88,195 @@ combination has been explicitly tested.
 Validated sets:
 
 ```text
-World
-Japan
+Rastan      - World
+Rastan Saga - Japan
 ```
 
-ZZRastan automatically detects the supported set.
+The GUI can auto-detect the set or force World/Japan.
 
-**ROM files are not distributed with ZZRastan.** You must provide your own legally
-obtained game data.
+### World 68000 program ROMs
 
-The final release package should document the exact filenames expected by the
-release build once the cleaned source/binary set is frozen.
+```text
+b04-38.19
+b04-37.7
+b04-40.20
+b04-39.8
+b04-42.21
+b04-43-1.9
+```
+
+### Japan 68000 program ROMs
+
+```text
+b04-32.19
+b04-31.7
+b04-34-1.20
+b04-33-1.8
+b04-36.21
+b04-35.9
+```
+
+### Shared graphics and sound ROMs
+
+```text
+b04-01.40
+b04-02.67
+b04-03.39
+b04-04.66
+b04-05.15
+b04-06.28
+b04-07.14
+b04-08.27
+b04-19.49
+b04-20.76
+```
+
+**ROM files are not distributed with ZZRastan.** Users must provide their own
+legally obtained game data.
 
 ---
 
 ## Installation
 
-Copy the release files to one directory on the Amiga.
+Download `ZZRastan_1.0.lha` from the GitHub Releases page and extract it.
 
-Expected release layout:
+Recommended layout:
 
 ```text
 ZZRastan/
   ZZRastan
   ZZRastan.info
+  ZZRastanGUI
+  ZZRastanGUI.info
   zzrastan.bin
-  README.md
-  LICENSES/
+  README
+  SOURCE.txt
+  licenses/
   roms/
 ```
 
-Place your supported Rastan ROM files in the ROM directory expected by the final
-release build.
+Place the supported ROM files in `roms/`.
 
-The ARM Core1 blob must match the ZZRastan executable from the same release.
+The GUI finds `ZZRastan` and `zzrastan.bin` in its own program drawer.
+
+---
+
+## Usage
+
+### Workbench
+
+Launch `ZZRastanGUI`, select the ROM directory if necessary, choose
+Auto-detect, World or Japan, then press **Launch**.
+
+### Shell
+
+```text
+ZZRastan roms zzrastan.bin
+```
+
+The GUI is the recommended launcher.
 
 ---
 
 ## Controls
 
-Current validated keyboard controls:
+| Control | Action |
+|---|---|
+| Cursor keys | Move |
+| A | Attack |
+| S | Jump |
+| 1 | Start |
+| 5 | Insert coin |
+| P | Pause |
+| T | Infinite lives |
+| Esc | Quit |
+
+Joystick/gamepad:
 
 ```text
-Cursor keys   Move
-A             Attack
-S             Jump
-1             Start
-5             Coin
-P             Pause
-T             Infinite-lives trainer
+Main button     Attack
+Second button   Jump
 ```
 
-Two-button DB9 joystick and supported USB game controllers can also be used.
+Keyboard, DB9 joystick and supported USB controllers can be used
+simultaneously.
 
 ---
 
-## Performance
+## Licensing and distribution
 
-The emulation runs on the ZZ9000 ARM Core1. The Amiga CPU is used mainly for host
-integration.
+ZZRastan 1.0 is distributed as **freeware for non-commercial use**.
 
-Validated hardware includes:
+### Amiga launcher and GUI
+
+The Amiga 68k launcher and `ZZRastanGUI` are proprietary closed-source
+software.
 
 ```text
-68060/50   smooth
-68030/25   smooth
+Copyright (c) 2026 Xanxi.
+All rights reserved.
 ```
 
-The optimized host-side input polling substantially reduces 68k overhead compared
-with earlier development builds.
+They may be redistributed unmodified as part of the complete ZZRastan
+freeware package. No permission is granted to modify, relicense or
+incorporate these proprietary components into another project.
+
+### ARM Core1 blob
+
+`zzrastan.bin` contains original ZZRastan code together with third-party
+emulation components under several different licenses. The blob therefore
+does **not** have a single blanket license.
+
+The corresponding source code for the ARM Core1 blob is published in this
+repository and includes the source required by the applicable third-party
+licenses.
+
+Third-party components retain their own copyright and license terms,
+including:
+
+- Cyclone 68000
+- CZ80
+- Jarek Burczynski YM2151 implementation / applicable FBNeo-MAME terms
+- ymfm
+
+See [`licenses/`](licenses/) for the authoritative notices.
+
+The availability of the Core1 source does not make ZZRastan as a whole
+open-source software and does not place original ZZRastan-specific code in
+the public domain.
+
+No Rastan ROMs, graphics, music, samples or other commercial game data are
+distributed.
 
 ---
 
-## Save states
+## Source
 
-Save-state support is the only feature still under final validation at the time
-this README was prepared.
-Save states are not included in ZZRastan 1.0 and will appear in a later version.
-
-
-## Licensing
-
-ZZRastan contains or derives from several third-party components with their own
-license terms. Their original notices must be retained.
-
-See:
+The source corresponding to the ZZRastan 1.0 ARM Core1 blob is in:
 
 ```text
-LICENSES/
+source/
+ymfm/
 ```
 
-No Rastan game ROMs, graphics, music or other commercial game data are distributed.
+Release tag:
+
+```text
+ZZRastan_V1.0
+```
+
+The Amiga 68k launcher and GUI are separate proprietary programs and their
+source code is not included.
 
 ---
 
 ## Credits
 
-Project direction, development, release and real-hardware validation: Xanxi
+Project direction, development, release and real-hardware validation:
+**Xanxi**
 
-Third-party emulation components and their authors are credited in LICENSES/.
+Third-party emulation components and their authors are credited in
+[`licenses/`](licenses/).
 
-Rastan and the original arcade hardware/software are property of their respective
-rights holders. ZZRastan is an independent compatibility/emulation project and
-does not include the original commercial ROM data.
+Rastan and the original arcade game software and hardware-related
+intellectual property remain property of their respective rights holders.
