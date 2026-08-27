@@ -1,0 +1,10 @@
+/* SYS:Storage/DOSDrivers/ZZSPEECH -- handler ZZSPEECH: (write-only)
+ * Format MountList classique (entree nommee + terminateur #), pour
+ * "Mount ZZSPEECH: FROM SYS:Storage/DOSDrivers/ZZSPEECH". */
+ZZSPEECH:
+    Handler   = L:ZZSpeech-Handler
+    StackSize = 8192
+    Priority  = 5
+    GlobVec   = -1
+    Activate  = 0
+#

@@ -1,0 +1,23 @@
+.KEY voice
+; ZZSpeech-Start [voice] -- lance le daemon puis monte ZZSPEECH: (a la demande)
+; A placer dans S:. Rien n'est charge au boot. A executer depuis le tiroir
+; ZZSpeech (le daemon y trouve la voix par defaut).
+;
+;   Execute S:ZZSpeech-Start                            -> voix par defaut (slt)
+;   Execute S:ZZSpeech-Start Voix:cmu_us_rms.flitevox   -> voix precisee
+;
+; Le blob Core1 est integre a ZZSpeechDaemon : aucun fichier .bin a deployer.
+; Arret : ZZSay QUIT  (libere Core1 ; le handler devient inerte proprement)
+.BRA {
+.KET }
+IF "{voice}" EQ ""
+  Run >NIL: ZZSpeechDaemon
+ELSE
+  Run >NIL: ZZSpeechDaemon "{voice}"
+ENDIF
+
+; monter ZZSPEECH: seulement s'il ne l'est pas deja
+Assign >NIL: ZZSPEECH: EXISTS
+IF WARN
+  Mount ZZSPEECH: FROM SYS:Storage/DOSDrivers/ZZSPEECH
+ENDIF
