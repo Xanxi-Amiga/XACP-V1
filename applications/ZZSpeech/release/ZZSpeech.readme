@@ -1,0 +1,51 @@
+Short:        Flite text-to-speech on MNT ZZ9000 ARM Core1
+Uploader:     xanxi (xanxi amiga)
+Author:       Xanxi
+Type:         util/misc
+Version:      1.0
+Architecture: m68k-amigaos >= 3.0
+Distribution: Aminet
+Requires:     MNT ZZ9000 with XACP firmware, AHI, 68020+
+
+ZZSpeech turns your Amiga into a talking machine by putting the ARM
+Cortex-A9 coprocessor of the MNT ZZ9000 to work.
+
+The 68k sends text, ARM Core1 synthesises the speech with Flite (CMU
+Festival Lite), and the audio comes back through AHI. The 68k stays free:
+no software synthesis on the m68k side.
+
+Features
+
+  - Resident daemon: the voice is loaded once, then speech is immediate
+  - Intuition/GadTools interface with a multi-line text editor
+  - Adjustable speaking speed (50% - 200%)
+  - Read any text file, or drop its icon on the window
+  - Save speech to a standard 16-bit WAV file
+  - DOS handler: echo "hello" >ZZSPEECH:  /  copy text.txt TO ZZSPEECH:
+  - CLI client (ZZSay) for scripts
+  - Interchangeable voices: any CMU Arctic .flitevox file
+
+Requirements
+
+  ZZSpeech needs an MNT ZZ9000 running the XACP firmware, which provides
+  the ARM Core1 mailbox protocol. A ZZ9000 with the stock MNT firmware
+  will NOT work.
+  Also needs AmigaOS 3.x, AHI, and an audio output (Paula or a sound card).
+
+Voices
+
+  slt (2.4 MB) is included as the default voice.
+  Other CMU Arctic voices (rms, bdl, clb...) can be downloaded from
+  festvox.org/flite and loaded with "Load voice...".
+
+Installation
+
+  See BUILD.txt. In short: put ZZSpeechDaemon, ZZSay, ZZSpeechGUI and
+  slt.flitevox in a drawer, ZZSpeech-Handler in L:, the ZZSPEECH mountlist
+  in SYS:Storage/DOSDrivers/ and ZZSpeech-Start in S:.
+
+Credits
+
+  Flite (CMU Festival Lite) by Carnegie Mellon University.
+  ZZ9000 hardware by MNT Research.
+  ZZSpeech, the ARM Core1 port and the XACP firmware by Xanxi, 2026.
