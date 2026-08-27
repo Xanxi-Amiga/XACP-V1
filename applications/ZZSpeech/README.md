@@ -27,7 +27,7 @@ The 68k sends text, the ARM Core1 synthesizes speech, and audio is played back t
 
 ZZSpeech requires a ZZ9000 running Xanxi XACP/Core1-compatible firmware. It does **not** work with stock MNT firmware 1.13.
 
-Other firmware builds, including MidWan builds, are unsupported unless they explicitly provide a compatible Core1 blob-launch and mailbox interface.
+Other firmware builds, including Blitterstudio builds, are unsupported unless they explicitly provide a compatible Core1 blob-launch and mailbox interface.
 
 ## Basic usage
 
