@@ -131,8 +131,15 @@ Integration proposals with other AmigaOS software, launchers, distributions, fir
 
 ZZSpeech is closed-source freeware by Xanxi.
 
-You may freely use and redistribute the original, unmodified ZZSpeech archive, provided all files, documentation, copyright notices, and third-party license notices are kept intact.
+You may freely use and redistribute the original unmodified archive, provided
+all documentation, copyright notices, and third-party license notices are kept
+intact.
 
-Modified redistribution, repackaging, rebranding, reverse engineering, or integration into another software, firmware, distribution, launcher, package, commercial product, or derived project requires prior written permission from Xanxi.
+Modified redistribution, rebranding, reverse engineering, repackaging, or
+integration of ZZSpeech into another software, launcher, firmware,
+distribution, package, commercial product, or derived project is not permitted
+without prior authorization.
+
+Requests for such use are welcome by Xanxi. Please contact the author first.
 
 CMU Flite and CMU/FestVox voice data remain under their respective upstream licenses. See `docs/LICENSES/`.
