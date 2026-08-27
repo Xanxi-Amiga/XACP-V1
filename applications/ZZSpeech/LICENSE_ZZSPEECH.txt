@@ -1,0 +1,26 @@
+ZZSpeech License
+================
+
+ZZSpeech is Copyright (C) 2026 Xanxi.
+
+ZZSpeech is distributed as closed-source freeware.
+
+You may use ZZSpeech free of charge on compatible Amiga systems.
+
+You may redistribute the original, unmodified ZZSpeech archive, provided that
+all files, documentation, copyright notices, and third-party license notices are
+kept intact.
+
+You may not modify, reverse engineer, decompile, disassemble, repackage,
+rebrand, incorporate, bundle, or integrate ZZSpeech or parts of ZZSpeech into
+another software, firmware, distribution, package, launcher, commercial product,
+or derived project without prior written permission from the author.
+
+Source code is not included and is not currently published.
+
+Integration with other software, AmigaOS tools, launchers, distributions,
+firmware projects, or ZZ9000-related environments is welcome, but requires
+prior coordination and permission from Xanxi.
+
+CMU Flite and CMU/FestVox voice data are used under their respective upstream
+licenses. See the included third-party license files for details.
