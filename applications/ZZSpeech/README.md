@@ -125,7 +125,9 @@ https://aminet.net/package/util/misc/ZZSpeech
 
 ZZSpeech is currently distributed as closed-source freeware. Source code is not included in this repository.
 
-Integration proposals with other AmigaOS software, launchers, distributions, firmware projects, or ZZ9000-related environments are welcome. Redistribution, repackaging, rebranding, modification, reverse engineering, or integration of ZZSpeech itself requires prior permission from Xanxi.
+Requests to use, integrate, bundle, or redistribute ZZSpeech as part of another
+software, firmware, launcher, distribution, package, or commercial product are
+welcome. Please contact Xanxi first.
 
 ## License
 
