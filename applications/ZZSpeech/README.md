@@ -4,7 +4,8 @@ ZZSpeech is a speech synthesis service for AmigaOS and the MNT ZZ9000 running Xa
 
 It uses the ZZ9000 ARM Cortex-A9 Core1 to run a resident CMU Flite speech engine. The Amiga side provides a resident daemon, an Intuition/GadTools GUI frontend, a CLI client, and a write-only DOS handler.
 
-The 68k sends text, the ARM Core1 synthesizes speech, and audio is played back through AHI. The main ZZ9000 `BOOT.bin` is not modified by ZZSpeech; the speech engine is loaded at runtime as an external Core1 blob.
+The 68k sends text, the ARM Core1 synthesizes speech, and audio is played back through AHI. The main ZZ9000 `BOOT.bin` is not modified by ZZSpeech; the Core1 speech engine is embedded in ZZSpeechDaemon and launched at runtime;
+the main ZZ9000 BOOT.bin is not modified..
 
 ## Features
 
@@ -76,7 +77,6 @@ SYS:ZZSpeech/
   ZZSpeechDaemon
   ZZSpeechGUI
   ZZSay
-  zspeech_core1.bin
   slt.flitevox
   docs/
 ```
