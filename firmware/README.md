@@ -335,8 +335,11 @@ Original copyright and license notices must be preserved with the corresponding 
 
 Publication of the XX19a firmware source does not imply that all Amiga-side XACP applications are open source. Application licensing and source availability are defined independently by each application package.
 
-The cleaned XX19a source package will be added to this repository together with the required third-party license material.
+The corresponding XX19a firmware source is available under
+firmware/source/XX19a/.
 
+Third-party components retain their original licenses and copyright
+notices, which are included with their corresponding source files.
 ---
 
 ## Archived builds
