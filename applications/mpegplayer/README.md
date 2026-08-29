@@ -324,7 +324,7 @@ Use the recommended encoding profile for reliable playback.
 
 Planned improvements:
 
-* source tree cleanup;
+* * internal codebase cleanup;
 * improved GUI integration;
 * improved file validation;
 * MPEG header parsing and FPS detection;
