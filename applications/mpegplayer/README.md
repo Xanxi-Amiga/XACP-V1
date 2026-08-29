@@ -362,6 +362,19 @@ STOP / return path
 ```
 
 ---
+## Third-party software
+
+The ARM/Core1 MPEG-1 video decoder used by ZZ-MPEG is based on
+PL_MPEG by Dominic Szablewski.
+
+PL_MPEG is licensed under the MIT License.
+
+https://github.com/phoboslab/pl_mpeg
+
+See `THIRD_PARTY_LICENSES.txt` for the complete license notice.
+
+---
+
 
 ## Credits
 
