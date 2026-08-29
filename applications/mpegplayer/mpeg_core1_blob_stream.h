@@ -1,3 +1,12 @@
+/*
+ * ZZ-MPEG ARM/Core1 binary blob.
+ *
+ * Contains code derived from PL_MPEG by Dominic Szablewski.
+ * PL_MPEG is licensed under the MIT License.
+ *
+ * See THIRD_PARTY_LICENSES.txt.
+ */
+
 /* mpeg_core1_blob_stream_diag15_stopack
  * diag11 + boucle STOP active apres STATUS_DONE
  * Repond 0xFF a MPEG_CMD_STOP/SH_STOP apres EOF
