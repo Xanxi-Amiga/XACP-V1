@@ -382,4 +382,6 @@ ZZ-MPEG is built for the ZZ9000 and its ARM capabilities.
 
 ZZ-MPEG uses the XACP approach developed by **Xanxi**.
 
+PL_MPEG by Dominic Szablewski - MPEG-1 decoding, MIT License.
+
 Created for the Amiga and ZZ9000 community.
