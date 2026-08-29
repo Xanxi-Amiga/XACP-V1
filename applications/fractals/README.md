@@ -44,3 +44,22 @@ https://youtu.be/C3OIMTwJfA8
 
 These demonstrations were publicly shown on May 7th, 2026 during the early public evolution of the XACP architecture.
 
+
+## License
+
+XACP Core1 Julia V2 is closed-source freeware.
+
+Copyright (C) 2026 Xanxi.
+All rights reserved.
+
+This software, including the Amiga executable and the ARM Core1 binary,
+is proprietary software.
+
+Redistribution of the original, unmodified files is permitted provided
+that this documentation is included.
+
+Modification, reverse engineering, repackaging, or redistribution of
+modified versions is not permitted without prior authorization.
+
+The source code is not included or published.
+
