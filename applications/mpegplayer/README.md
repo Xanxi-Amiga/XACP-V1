@@ -132,17 +132,6 @@ ffmpeg -i input.mp4 -vf "scale=320:240:force_original_aspect_ratio=decrease:flag
 * AHI;
 * compatible ZZ9000 firmware with XACP / ARM support.
 
-### Build environment
-
-* `m68k-amigaos-gcc`;
-* `-noixemul` build recommended.
-
-Example build command:
-
-```sh
-m68k-amigaos-gcc -O2 -noixemul -m68020 -o ZZMpegStream ZZMpegStream.c -lamiga
-```
-
 ---
 
 ## Usage
