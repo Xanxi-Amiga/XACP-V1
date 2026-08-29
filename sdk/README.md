@@ -423,3 +423,19 @@ These headers should use `xacp_memory_map_v1_6.h` as their common memory-map ref
 XACP / Xanxi, 2026.
 
 For use with the MNT ZZ9000 Amiga RTG / ARM platform.
+
+
+---
+
+## License
+
+The XACP SDK, including the public headers and memory-map definitions in
+this directory, is licensed under the Zero-Clause BSD license (0BSD).
+
+This permissive license allows the SDK definitions to be used, copied,
+modified, and integrated into open-source or proprietary software without
+an attribution requirement.
+
+See `LICENSE` for the full license text.
+
+SPDX-License-Identifier: 0BSD
