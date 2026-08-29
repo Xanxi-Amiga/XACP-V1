@@ -136,7 +136,12 @@ Application-specific documentation and release material are stored under:
 applications/
 ```
 
-Not every application requires the same firmware generation. Historical applications are retained together with their original compatibility information.
+All current public XACP applications are compatible with the latest firmware published in this repository.
+
+Historical firmware builds are retained for reference, regression testing and documentation of the platform's evolution, but they are not required for normal use of current applications.
+
+The only exception is the set of very early fractal / Core1 demonstration programs from May 2026. These predate the current XACP architecture and are preserved for historical purposes only; they should not be considered part of the current compatibility baseline.
+
 
 ---
 
