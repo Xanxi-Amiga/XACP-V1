@@ -1,0 +1,23 @@
+XACP mpega.library - License and provenance
+===========================================
+
+Copyright (C) 2026 Xanxi.
+All rights reserved.
+
+The XACP mpega.library is a modern, independent implementation written
+from scratch for the ZZ9000 XACP audio system.
+
+It implements compatibility with the established Amiga mpega.library API
+but does not contain source code from the historical 68k mpega.library
+implementation. The original mpega.library source code was not used in
+the development of this implementation.
+
+The XACP mpega.library is distributed as closed-source freeware.
+
+Redistribution of the unmodified binary is permitted provided that this
+license and the accompanying documentation are included.
+
+Modification, repackaging, or redistribution of modified versions is not
+permitted without prior authorization.
+
+The source code is not included or published.
