@@ -120,6 +120,7 @@ Current and historical projects in this repository include:
 | **ZZMIDI**                    | SoundFont MIDI synthesis on the ZZ9000 ARM with AHI playback |
 | **ZZPicoDrive**               | Mega Drive / Genesis emulation using ZZ9000 Core1            |
 | **ZZDoom**                    | Doom engine running on ZZ9000 Core1                          |
+| **ZZRastan**                  | Rastan arcade engine running on ZZ9000 Core1 |
 | **ZZSpeech**                  | Speech synthesis accelerated by the ZZ9000                   |
 | **ZZ-MPEG**                   | MPEG-1 video and MP2 audio playback                          |
 | **ZZPlayGUI / MP3 tools**     | ARM-accelerated MP3 / MP2 decoding                           |
