@@ -1,0 +1,26 @@
+ZZ9000.card - Source and License
+================================
+
+The ZZ9000.card binary distributed with the XACP firmware package
+is an unmodified third-party component.
+
+Binary identification:
+ZZ9000.card+blitter 1.13 (04.10.2022)
+
+SHA-256:
+d528470fa8780715aa024ce5d95e36e36b3e1ba2805f185f5046c50eb61466da
+
+The driver is based on the MNT ZZ9000 Picasso96 driver and includes
+the April 2026 modifications by Dimitris Panokostas (MidWaN).
+
+License:
+GNU General Public License version 3 or later.
+
+Historical corresponding source:
+https://source.mnt.re/midwan/zz9000-drivers/-/tree/01b33a028a9877e6a41f4e61fd48db0b2a72250a
+
+The relevant driver source and build files are located in:
+rtg/
+
+The XACP-ZZ9000 project redistributes this ZZ9000.card binary
+unchanged and makes no modifications to the driver.
