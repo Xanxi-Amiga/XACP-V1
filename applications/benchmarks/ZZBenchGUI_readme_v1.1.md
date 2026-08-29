@@ -182,24 +182,22 @@ the 68k reaching the card, not a measure of the DDR being slow.
 
 ---
 
-## Building from source
+## License
 
-Two toolchains, two steps:
+ZZBench is closed-source freeware.
 
-1. **ARM blob** - `arm-none-eabi-gcc` (13.2):
-   ```sh
-   bash build_arm.sh        # produces zzbench_softfp.bin
-   ```
-2. **68k binary** - `m68k-amigaos-gcc` (bebbo, 6.5):
-   ```sh
-   bash build_68k.sh        # embeds the blob, produces ZZBenchGUI (+ CLI ZZBench)
-   ```
+Copyright (C) 2026 Xanxi.
 
-The 68k build embeds the ARM blob with `.incbin`, so the resulting executable
-is self-contained. The release is the single universal `-m68020 -m68881` build.
+Redistribution is permitted only in unmodified form and with this
+documentation included.
 
-A text-mode CLI (`ZZBench`) is also produced - it prints the CPU numbers as a
-table, handy from a Shell or for logging.
+Modification, reverse engineering, repackaging, or redistribution of
+modified binaries is not permitted without prior authorization.
+
+The source code is not included or published.
+
+Dhrystone 2.1 and Whetstone remain subject to their respective original
+authorship and notices.
 
 ---
 
@@ -211,6 +209,16 @@ table, handy from a Shell or for logging.
   long-standing public benchmarks.
 - MNT ZZ9000 hardware by MNT Research.
 
-## License
 
-GPL-3.0.
+
+---
+
+## Credits
+
+- **Xanxi**, 2026. Part of the **XACP** (Xanxi ARM Coprocessor Protocol) work
+  for the MNT ZZ9000.
+- Dhrystone 2.1 by Reinhold P. Weicker; Whetstone by Curnow & Wichmann - both
+  long-standing public benchmarks.
+- MNT ZZ9000 hardware by MNT Research.
+
+
