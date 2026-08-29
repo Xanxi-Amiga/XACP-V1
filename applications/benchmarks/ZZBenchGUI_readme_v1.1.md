@@ -211,14 +211,5 @@ authorship and notices.
 
 
 
----
-
-## Credits
-
-- **Xanxi**, 2026. Part of the **XACP** (Xanxi ARM Coprocessor Protocol) work
-  for the MNT ZZ9000.
-- Dhrystone 2.1 by Reinhold P. Weicker; Whetstone by Curnow & Wichmann - both
-  long-standing public benchmarks.
-- MNT ZZ9000 hardware by MNT Research.
 
 
