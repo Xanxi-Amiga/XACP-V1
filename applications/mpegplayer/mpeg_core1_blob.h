@@ -1,3 +1,12 @@
+/*
+ * ZZ-MPEG ARM/Core1 binary blob.
+ *
+ * Contains code derived from PL_MPEG by Dominic Szablewski.
+ * PL_MPEG is licensed under the MIT License.
+ *
+ * See THIRD_PARTY_LICENSES.txt.
+ */
+
 /* mpeg_core1_play7.bin — MPEG à 0x05000000 (16MB), MMU propre */
 static const UBYTE embedded_blob[] = {
     0x34,0xD0,0x9F,0xE5,0x0F,0x02,0xE0,0xE3,0x50,0x0F,0x01,0xEE,0x6F,0xF0,0x7F,0xF5,
