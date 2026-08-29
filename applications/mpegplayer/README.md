@@ -362,6 +362,29 @@ STOP / return path
 ```
 
 ---
+
+## License
+
+Except for third-party components identified in
+`THIRD_PARTY_LICENSES.txt`, ZZ-MPEG is proprietary closed-source freeware.
+
+Copyright (C) 2026 Xanxi.
+All rights reserved.
+
+Redistribution of the original, unmodified binaries is permitted provided
+that this documentation and the third-party license notices are included.
+
+Modification, repackaging, or redistribution of modified versions is not
+permitted without prior authorization.
+
+The source code is not included or published.
+
+Third-party components remain subject to their respective original licenses.
+See `THIRD_PARTY_LICENSES.txt`.
+
+---
+
+
 ## Third-party software
 
 The ARM/Core1 MPEG-1 video decoder used by ZZ-MPEG is based on
