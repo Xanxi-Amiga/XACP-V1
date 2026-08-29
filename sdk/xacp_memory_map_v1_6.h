@@ -6,15 +6,15 @@
  *
  * eXtended ARM Coprocessor Protocol for the MNT ZZ9000.
  *
- * Current public baseline:
+ * Public baseline:
  *
  *   Firmware : XX19a
  *   Protocol : XACP v1.6
  *
  * Firmware build numbers and XACP protocol versions are separate.
  *
- * Shared offsets below are framebuffer-relative unless explicitly marked
- * as ARM absolute physical addresses.
+ * Addressing conventions
+ * ----------------------
  *
  * Amiga side:
  *
@@ -25,15 +25,17 @@
  *
  *   framebuffer physical base = 0x00200000
  *
- * Therefore:
+ * Unless explicitly marked as an ARM absolute physical address,
+ * XACP shared-memory addresses in this header are framebuffer-relative.
  *
- *   ARM physical = XACP_ARM_FB_PHYS_BASE + fb-relative offset
+ * For a framebuffer-relative offset:
  *
- * XACP v1.6 rule:
+ *   ARM physical = 0x00200000 + fb-relative offset
  *
- *   Do not create undocumented shared-DDR allocations.
- *   All persistent Core0 and dynamic Core1 allocations must remain inside
- *   their assigned regions.
+ * IMPORTANT:
+ *
+ * XACP v1.6 makes shared DDR ownership part of the ABI.
+ * Do not introduce new undocumented DDR allocations.
  */
 
 #ifdef __cplusplus
@@ -53,7 +55,7 @@ extern "C" {
 
 
 /* ------------------------------------------------------------------------- */
-/* Addressing conventions                                                    */
+/* Addressing                                                                */
 /* ------------------------------------------------------------------------- */
 
 #define XACP_MNT_FB_BASE                    0x00010000UL
@@ -62,43 +64,18 @@ extern "C" {
 #define XACP_FB_OFFSET_TO_ARM_PHYS(x) \
     (XACP_ARM_FB_PHYS_BASE + (x))
 
-
-/* ------------------------------------------------------------------------- */
-/* Zorro / XACP registers                                                    */
-/* ------------------------------------------------------------------------- */
-
-#define XACP_REG_CMD                        0x0064UL
-#define XACP_REG_STATUS                     0x0064UL
-
-#define XACP_REG_ARM_RUN_HI                 0x0090UL
-#define XACP_REG_ARM_RUN_LO                 0x0092UL
+#define XACP_ARM_PHYS_TO_FB_OFFSET(x) \
+    ((x) - XACP_ARM_FB_PHYS_BASE)
 
 
 /* ------------------------------------------------------------------------- */
-/* Established XACP opcodes                                                  */
+/* Established generic XACP shared regions                                   */
 /* ------------------------------------------------------------------------- */
 
 /*
- * These constants are retained here because they are part of the established
- * public XACP interface used together with the memory map.
- *
- * Future SDK revisions may move opcode definitions to xacp_opcodes.h.
+ * These regions predate v1.6 and remain part of the established XACP
+ * environment.
  */
-
-#define XACP_OP_MEMCPY                      0x0001UL
-#define XACP_OP_MANDELBROT                  0x0002UL
-#define XACP_OP_MP3_DECODE                  0x0003UL
-#define XACP_OP_STREAM_OPEN                 0x0004UL
-#define XACP_OP_STREAM_CLOSE                0x0005UL
-
-#define XACP_OP_MIDI_SF2                    0x0120UL
-
-#define XACP_OP_CORE1_RESET                 0x0303UL
-
-
-/* ------------------------------------------------------------------------- */
-/* Generic XACP / MP3 / MP2 shared DDR map                                   */
-/* ------------------------------------------------------------------------- */
 
 #define XACP_COMMAND_OFFSET                 0x04000000UL
 #define XACP_STREAM_OFFSET                  0x04002000UL
@@ -115,208 +92,296 @@ extern "C" {
 
 
 /* ------------------------------------------------------------------------- */
-/* Legacy Core1 shared application area                                      */
+/* XACP v1.6 ZZMIDI shared corridor                                          */
 /* ------------------------------------------------------------------------- */
 
 /*
- * Established framebuffer-relative Core1 application area.
+ * All current ZZMIDI shared regions live inside:
  *
- * Historically used by JuliaV2, ZZMPEG, ZZDoom and benchmark/Core1 paths.
- *
- * XACP v1.6 preserves this existing allocation. It is not generic scratch
- * memory: an application must obey the layout defined for its Core1 runtime.
- */
-
-#define XACP_CORE1_APP_AREA_START           0x04300000UL
-#define XACP_CORE1_CODE_OFFSET              0x04300000UL
-#define XACP_CORE1_SHARED_OFFSET            0x04500000UL
-#define XACP_CORE1_APP_AREA_END             0x04600000UL
-
-
-/* ------------------------------------------------------------------------- */
-/* ZZMPEG Program Stream ring                                                */
-/* ------------------------------------------------------------------------- */
-
-#define XACP_ZZMPEG_PS_RING_OFFSET          0x05000000UL
-#define XACP_ZZMPEG_PS_RING_SIZE            (4UL * 1024UL * 1024UL)
-#define XACP_ZZMPEG_PS_RING_END \
-    (XACP_ZZMPEG_PS_RING_OFFSET + XACP_ZZMPEG_PS_RING_SIZE)
-
-
-/* ------------------------------------------------------------------------- */
-/* XACP v1.6 ZZMIDI shared region                                            */
-/* ------------------------------------------------------------------------- */
-
-/*
- * XACP v1.6 replaces the former large Zorro-visible ZZMIDI SF2/MIDI staging
- * model with a compact shared service region plus ARM-private storage.
- *
- * Shared / framebuffer-relative allocation:
- *
- *   fb+0x06000000 - fb+0x06010000  control allocation
- *   fb+0x06010000 - fb+0x06100000  realtime FIFO allocation
- *   fb+0x06100000 - fb+0x06200000  PCM ring
- *   fb+0x06200000 - fb+0x06300000  upload window
- *
- * Total: 3 MB.
+ *   fb+0x06000000 .. fb+0x06300000
  *
  * ARM physical view:
  *
- *   0x06200000 - 0x06500000
+ *   0x06200000 .. 0x06500000
  *
- * The FIFO allocation is the reserved DDR extent, not necessarily the
- * logical FIFO payload capacity.
+ * Layout:
+ *
+ *   fb+0x06000000  control block
+ *                  actual block: 0xD0 bytes / 208 bytes
+ *                  64 KB reserved before FIFO
+ *
+ *   fb+0x06010000  realtime MIDI FIFO
+ *                  actual FIFO span: 0x2060 bytes
+ *
+ *   fb+0x06100000  MIDI PCM ring
+ *                  1 MB
+ *
+ *   fb+0x06200000  chunked upload buffer
+ *                  1 MB
+ *
+ *   fb+0x06300000  end of shared ZZMIDI corridor
+ *
+ * The unused space between the end of the actual FIFO and 0x06100000 is
+ * reserved corridor space. It is NOT part of the logical FIFO payload and
+ * must not be independently allocated.
  */
 
-#define XMID_V16_SHARED_START               0x06000000UL
+#define XMID_SHARED_START                   0x06000000UL
 
 
-/* Control allocation: 64 KB */
+/* Control block ----------------------------------------------------------- */
 
-#define XMID_V16_CTRL_OFFSET                0x06000000UL
-#define XMID_V16_CTRL_REGION_SIZE           0x00010000UL
-#define XMID_V16_CTRL_REGION_END \
-    (XMID_V16_CTRL_OFFSET + XMID_V16_CTRL_REGION_SIZE)
-
-
-/* Realtime FIFO allocation: 960 KB */
-
-#define XMID_V16_FIFO_OFFSET                0x06010000UL
-#define XMID_V16_FIFO_REGION_SIZE           0x000F0000UL
-#define XMID_V16_FIFO_REGION_END \
-    (XMID_V16_FIFO_OFFSET + XMID_V16_FIFO_REGION_SIZE)
+#define XMID_CTRL_OFFSET                    0x06000000UL
+#define XMID_CTRL_STRUCT_SIZE               0x000000D0UL   /* 208 bytes */
+#define XMID_CTRL_RESERVED_SIZE             0x00010000UL   /* 64 KB */
+#define XMID_CTRL_RESERVED_END \
+    (XMID_CTRL_OFFSET + XMID_CTRL_RESERVED_SIZE)
 
 
-/* PCM output ring: 1 MB */
+/* Realtime FIFO ----------------------------------------------------------- */
 
-#define XMID_V16_PCM_RING_OFFSET            0x06100000UL
-#define XMID_V16_PCM_RING_SIZE              (1UL * 1024UL * 1024UL)
-#define XMID_V16_PCM_RING_END \
-    (XMID_V16_PCM_RING_OFFSET + XMID_V16_PCM_RING_SIZE)
+/*
+ * FIFO layout:
+ *
+ *   +0x00  magic
+ *   +0x04  version
+ *   +0x08  fifo_size
+ *   +0x0C  dropped
+ *   +0x20  write_idx
+ *   +0x40  read_idx
+ *   +0x60  events[]
+ *
+ * 1024 slots x 8 bytes plus 0x60-byte header:
+ *
+ *   0x60 + 1024 * 8 = 0x2060 bytes
+ */
+
+#define XMID_FIFO_OFFSET                    0x06010000UL
+
+#define XMID_FIFO_MAGIC                     0x5A4D4646UL   /* 'ZMFF' */
+#define XMID_FIFO_VERSION                   2u
+#define XMID_FIFO_SLOTS                     1024u
+#define XMID_FIFO_EVENTS_OFF                0x60u
+
+#define XMID_FIFO_SPAN \
+    (XMID_FIFO_EVENTS_OFF + XMID_FIFO_SLOTS * 8u)
+
+#define XMID_FIFO_RESERVED_END              0x06100000UL
 
 
-/* Chunked host -> ARM upload window: 1 MB */
+/* MIDI PCM ring ----------------------------------------------------------- */
 
-#define XMID_V16_UPLOAD_OFFSET              0x06200000UL
-#define XMID_V16_UPLOAD_SIZE                (1UL * 1024UL * 1024UL)
-#define XMID_V16_UPLOAD_END \
-    (XMID_V16_UPLOAD_OFFSET + XMID_V16_UPLOAD_SIZE)
-
-
-#define XMID_V16_SHARED_END                 0x06300000UL
-#define XMID_V16_SHARED_SIZE \
-    (XMID_V16_SHARED_END - XMID_V16_SHARED_START)
+#define XMID_PCM_RING_OFFSET                0x06100000UL
+#define XMID_PCM_RING_SIZE                  (1UL * 1024UL * 1024UL)
+#define XMID_PCM_RING_END \
+    (XMID_PCM_RING_OFFSET + XMID_PCM_RING_SIZE)
 
 
-/* ARM physical representation of the same shared region */
+/* Shared upload window ---------------------------------------------------- */
 
-#define XACP_ARM_XMID_SHARED_BASE \
-    XACP_FB_OFFSET_TO_ARM_PHYS(XMID_V16_SHARED_START)
+/*
+ * SF2 and MIDI files are transferred through this 1 MB window in chunks.
+ *
+ * The complete files are copied to ARM-private DDR before being parsed.
+ *
+ * The old XACP v1.5 large Zorro-visible SF2 and MIDI staging buffers are
+ * no longer part of the v1.6 layout.
+ */
 
-#define XACP_ARM_XMID_SHARED_END \
-    XACP_FB_OFFSET_TO_ARM_PHYS(XMID_V16_SHARED_END)
+#define XMID_UPLOAD_OFFSET                  0x06200000UL
+#define XMID_UPLOAD_SIZE                    (1UL * 1024UL * 1024UL)
+#define XMID_UPLOAD_END \
+    (XMID_UPLOAD_OFFSET + XMID_UPLOAD_SIZE)
+
+#define XMID_SHARED_END                     0x06300000UL
+#define XMID_SHARED_SIZE \
+    (XMID_SHARED_END - XMID_SHARED_START)
+
+
+/* ARM representation of the same shared corridor ------------------------- */
+
+#define XMID_SHARED_ARM_BASE \
+    XACP_FB_OFFSET_TO_ARM_PHYS(XMID_SHARED_START)
+
+#define XMID_SHARED_ARM_END \
+    XACP_FB_OFFSET_TO_ARM_PHYS(XMID_SHARED_END)
 
 
 /* ------------------------------------------------------------------------- */
-/* ARM address-space boundaries                                              */
+/* Published application safety boundaries                                  */
 /* ------------------------------------------------------------------------- */
 
 /*
- * Absolute ARM physical addresses below this point.
+ * These boundaries were used when validating the XACP v1.6 ZZMIDI corridor
+ * against the released application layouts.
  *
- * These are NOT framebuffer-relative offsets.
+ * Semi-open intervals are used: [base, end).
  */
 
-/*
- * Existing Zorro-visible ARM range.
- *
- * Do not allocate private ARM buffers here.
- */
 
-#define XACP_ARM_Z3_VISIBLE_BASE            0x20000000UL
-#define XACP_ARM_Z3_VISIBLE_END             0x22000000UL
+/* ZZDoom Core1 heap: ARM [0x05A00000, 0x06200000) */
+
+#define XACP_ARM_ZZDOOM_HEAP_BASE           0x05A00000UL
+#define XACP_ARM_ZZDOOM_HEAP_END            0x06200000UL
+
+
+/* ZZDoom save area: ARM [0x07E00000, 0x07F00000) */
+
+#define XACP_ARM_ZZDOOM_SAVE_BASE           0x07E00000UL
+#define XACP_ARM_ZZDOOM_SAVE_END            0x07F00000UL
 
 
 /* ------------------------------------------------------------------------- */
-/* ARM-private XACP v1.6 map                                                 */
+/* ARM absolute physical memory safety zones                                 */
 /* ------------------------------------------------------------------------- */
 
 /*
- * 0x22000000 - 0x23000000
+ * Everything in this section is an ARM ABSOLUTE PHYSICAL ADDRESS.
  *
- * Reserved for the established Core1 private / legacy application
- * environment.
+ * These values must never be treated as framebuffer-relative offsets.
  */
-
-#define XACP_ARM_CORE1_LEGACY_BASE          0x22000000UL
-#define XACP_ARM_CORE1_LEGACY_SIZE          (16UL * 1024UL * 1024UL)
-#define XACP_ARM_CORE1_LEGACY_END \
-    (XACP_ARM_CORE1_LEGACY_BASE + XACP_ARM_CORE1_LEGACY_SIZE)
 
 
 /*
- * 0x23000000 - 0x25000000
+ * ARM 0x20000000 .. 0x201F0000
  *
- * ZZMIDI ARM-private SoundFont storage.
+ * This projects into live AmigaOS ZZ9000 Z3 Fast RAM.
+ *
+ * NEVER USE for ARM-private allocations.
  */
 
-#define XACP_ARM_XMID_SF2_BASE              0x23000000UL
-#define XACP_ARM_XMID_SF2_SIZE              (32UL * 1024UL * 1024UL)
-#define XACP_ARM_XMID_SF2_END \
-    (XACP_ARM_XMID_SF2_BASE + XACP_ARM_XMID_SF2_SIZE)
+#define XACP_ARM_Z3_COLLISION_BASE           0x20000000UL
+#define XACP_ARM_Z3_COLLISION_END            0x201F0000UL
 
 
 /*
- * 0x25000000 - 0x25600000
+ * ARM 0x201F0000 .. 0x22000000
  *
- * ZZMIDI ARM-private MIDI / parsed-data storage.
+ * Guard / no-man's-land.
+ *
+ * Do not use and do not map as part of the ARM-private cacheable pool.
  */
 
-#define XACP_ARM_XMID_MIDI_BASE             0x25000000UL
-#define XACP_ARM_XMID_MIDI_SIZE             (6UL * 1024UL * 1024UL)
-#define XACP_ARM_XMID_MIDI_END \
-    (XACP_ARM_XMID_MIDI_BASE + XACP_ARM_XMID_MIDI_SIZE)
+#define XACP_ARM_NO_MANS_LAND_BASE           0x201F0000UL
+#define XACP_ARM_NO_MANS_LAND_END            0x22000000UL
 
 
 /*
- * 0x25600000 - 0x2F600000
+ * Safe private XACP window.
  *
- * ZZMIDI / firmware service heap.
+ * MMU policy for the current firmware:
  *
- * Intended for TinySoundFont, TinyMidiLoader and related persistent
- * service/runtime allocations.
+ *   map ONLY 0x22000000 .. 0x30000000 as NORM_WB_CACHE
+ *
+ * Do not map 0x20000000 .. 0x22000000 as ARM-private memory.
  */
 
-#define XACP_ARM_SERVICE_HEAP_BASE          0x25600000UL
-#define XACP_ARM_SERVICE_HEAP_SIZE          (160UL * 1024UL * 1024UL)
-#define XACP_ARM_SERVICE_HEAP_END \
-    (XACP_ARM_SERVICE_HEAP_BASE + XACP_ARM_SERVICE_HEAP_SIZE)
-
-
-/*
- * 0x2F600000 - 0x30000000
- *
- * XACP v1.6 guard area.
- *
- * Intentionally not available as generic application scratch memory.
- */
-
-#define XACP_ARM_V16_GUARD_BASE             0x2F600000UL
-#define XACP_ARM_V16_GUARD_SIZE             (10UL * 1024UL * 1024UL)
-#define XACP_ARM_V16_GUARD_END \
-    (XACP_ARM_V16_GUARD_BASE + XACP_ARM_V16_GUARD_SIZE)
-
-
-#define XACP_ARM_V16_PRIVATE_BASE           0x22000000UL
-#define XACP_ARM_V16_PRIVATE_END            0x30000000UL
+#define XACP_ARM_PRIVATE_SAFE_BASE           0x22000000UL
+#define XACP_ARM_PRIVATE_SAFE_END            0x30000000UL
 
 
 /* ------------------------------------------------------------------------- */
-/* Convenience sizes                                                         */
+/* ZZPicoDrive private allocation                                            */
 /* ------------------------------------------------------------------------- */
 
-#define XACP_KIB                            1024UL
-#define XACP_MIB                            (1024UL * 1024UL)
+/*
+ * ARM 0x22000000 .. 0x23000000
+ *
+ * Reserved for ZZPicoDrive / established Core1 private use.
+ *
+ * ZZMIDI must never allocate below 0x23000000.
+ */
+
+#define XACP_ARM_ZZPICO_PRIVATE_BASE         0x22000000UL
+#define XACP_ARM_ZZPICO_PRIVATE_SIZE         (16UL * 1024UL * 1024UL)
+#define XACP_ARM_ZZPICO_PRIVATE_END \
+    (XACP_ARM_ZZPICO_PRIVATE_BASE + XACP_ARM_ZZPICO_PRIVATE_SIZE)
+
+
+/* ------------------------------------------------------------------------- */
+/* ZZMIDI ARM-private allocation                                             */
+/* ------------------------------------------------------------------------- */
+
+/*
+ * ARM 0x23000000 .. 0x25000000
+ *
+ * Raw SoundFont private copy.
+ *
+ * This is a reserved memory allocation size, not necessarily the maximum
+ * SoundFont size accepted by a particular ZZMIDI software release.
+ */
+
+#define XMID_RAW_SF2_BASE_ABS                0x23000000UL
+#define XMID_SF2_POOL_SIZE                   (32UL * 1024UL * 1024UL)
+#define XMID_RAW_SF2_END_ABS \
+    (XMID_RAW_SF2_BASE_ABS + XMID_SF2_POOL_SIZE)
+
+
+/*
+ * ARM 0x25000000 .. 0x25600000
+ *
+ * Raw MIDI private copy.
+ */
+
+#define XMID_RAW_MIDI_BASE_ABS               0x25000000UL
+#define XMID_MIDI_POOL_SIZE                  (6UL * 1024UL * 1024UL)
+#define XMID_RAW_MIDI_END_ABS \
+    (XMID_RAW_MIDI_BASE_ABS + XMID_MIDI_POOL_SIZE)
+
+
+/*
+ * ARM 0x25600000 .. 0x2F600000
+ *
+ * TinySoundFont / TinyMidiLoader runtime heap.
+ */
+
+#define XMID_HEAP_BASE_ABS                   0x25600000UL
+#define XMID_HEAP_SIZE                       (160u * 1024u * 1024u)
+#define XMID_HEAP_END_ABS                    0x2F600000UL
+
+
+/*
+ * Complete ZZMIDI-owned private pool:
+ *
+ *   0x23000000 .. 0x30000000
+ */
+
+#define XMID_PRIVATE_POOL_BASE_ABS           0x23000000UL
+#define XMID_PRIVATE_POOL_END_ABS            0x30000000UL
+
+
+/* ------------------------------------------------------------------------- */
+/* Guard after ZZMIDI heap                                                   */
+/* ------------------------------------------------------------------------- */
+
+/*
+ * ARM 0x2F600000 .. 0x30000000
+ *
+ * Intentionally unused 10 MB guard.
+ */
+
+#define XACP_ARM_XMID_GUARD_BASE             0x2F600000UL
+#define XACP_ARM_XMID_GUARD_SIZE             (10UL * 1024UL * 1024UL)
+#define XACP_ARM_XMID_GUARD_END \
+    (XACP_ARM_XMID_GUARD_BASE + XACP_ARM_XMID_GUARD_SIZE)
+
+
+/* ------------------------------------------------------------------------- */
+/* SMUSH reserved region                                                     */
+/* ------------------------------------------------------------------------- */
+
+/*
+ * ARM 0x30000000 .. 0x33000000
+ *
+ * Reserved for SMUSH codec use.
+ *
+ * XACP applications and services must not allocate from this range.
+ */
+
+#define XACP_ARM_SMUSH_BASE                  0x30000000UL
+#define XACP_ARM_SMUSH_END                   0x33000000UL
+#define XACP_ARM_SMUSH_SIZE \
+    (XACP_ARM_SMUSH_END - XACP_ARM_SMUSH_BASE)
 
 
 /* ------------------------------------------------------------------------- */
@@ -327,97 +392,130 @@ extern "C" {
     typedef char xacp_static_assert_##name[(cond) ? 1 : -1]
 
 
-/* Generic XACP layout */
+/* Generic XACP regions ---------------------------------------------------- */
 
-XACP_STATIC_ASSERT(mp3_before_pcm,
+XACP_STATIC_ASSERT(mp3_ring_before_pcm_ring,
     XACP_MP3_RING_END <= XACP_PCM_RING_OFFSET);
 
-XACP_STATIC_ASSERT(pcm_before_core1_area,
-    XACP_PCM_RING_END <= XACP_CORE1_APP_AREA_START);
 
-XACP_STATIC_ASSERT(core1_before_zzmpeg,
-    XACP_CORE1_APP_AREA_END <= XACP_ZZMPEG_PS_RING_OFFSET);
+/* ZZMIDI shared corridor -------------------------------------------------- */
 
+XACP_STATIC_ASSERT(xmid_ctrl_starts_corridor,
+    XMID_CTRL_OFFSET == XMID_SHARED_START);
 
-/* v1.6 ZZMIDI shared layout */
+XACP_STATIC_ASSERT(xmid_ctrl_struct_fits_reserved_area,
+    XMID_CTRL_STRUCT_SIZE <= XMID_CTRL_RESERVED_SIZE);
 
-XACP_STATIC_ASSERT(xmid_ctrl_starts_shared,
-    XMID_V16_CTRL_OFFSET == XMID_V16_SHARED_START);
+XACP_STATIC_ASSERT(xmid_ctrl_reserved_ends_at_fifo,
+    XMID_CTRL_RESERVED_END == XMID_FIFO_OFFSET);
 
-XACP_STATIC_ASSERT(xmid_ctrl_ends_at_fifo,
-    XMID_V16_CTRL_REGION_END == XMID_V16_FIFO_OFFSET);
+XACP_STATIC_ASSERT(xmid_fifo_span_is_0x2060,
+    XMID_FIFO_SPAN == 0x2060UL);
 
-XACP_STATIC_ASSERT(xmid_fifo_ends_at_pcm,
-    XMID_V16_FIFO_REGION_END == XMID_V16_PCM_RING_OFFSET);
+XACP_STATIC_ASSERT(xmid_fifo_fits_before_pcm,
+    XMID_FIFO_OFFSET + XMID_FIFO_SPAN <= XMID_PCM_RING_OFFSET);
+
+XACP_STATIC_ASSERT(xmid_fifo_reserved_area_ends_at_pcm,
+    XMID_FIFO_RESERVED_END == XMID_PCM_RING_OFFSET);
 
 XACP_STATIC_ASSERT(xmid_pcm_is_1mb,
-    XMID_V16_PCM_RING_SIZE == (1UL * 1024UL * 1024UL));
+    XMID_PCM_RING_SIZE == (1UL * 1024UL * 1024UL));
 
 XACP_STATIC_ASSERT(xmid_pcm_ends_at_upload,
-    XMID_V16_PCM_RING_END == XMID_V16_UPLOAD_OFFSET);
+    XMID_PCM_RING_END == XMID_UPLOAD_OFFSET);
 
 XACP_STATIC_ASSERT(xmid_upload_is_1mb,
-    XMID_V16_UPLOAD_SIZE == (1UL * 1024UL * 1024UL));
+    XMID_UPLOAD_SIZE == (1UL * 1024UL * 1024UL));
 
-XACP_STATIC_ASSERT(xmid_upload_ends_shared,
-    XMID_V16_UPLOAD_END == XMID_V16_SHARED_END);
+XACP_STATIC_ASSERT(xmid_upload_ends_corridor,
+    XMID_UPLOAD_END == XMID_SHARED_END);
 
-XACP_STATIC_ASSERT(xmid_shared_is_3mb,
-    XMID_V16_SHARED_SIZE == (3UL * 1024UL * 1024UL));
-
-XACP_STATIC_ASSERT(xmid_shared_after_zzmpeg,
-    XACP_ZZMPEG_PS_RING_END <= XMID_V16_SHARED_START);
+XACP_STATIC_ASSERT(xmid_shared_corridor_is_3mb,
+    XMID_SHARED_SIZE == (3UL * 1024UL * 1024UL));
 
 
-/* Shared fb-relative -> ARM physical translation */
+/* Shared offset -> ARM physical translation ------------------------------- */
 
-XACP_STATIC_ASSERT(xmid_arm_shared_base,
-    XACP_ARM_XMID_SHARED_BASE == 0x06200000UL);
+XACP_STATIC_ASSERT(xmid_shared_arm_base_is_0x06200000,
+    XMID_SHARED_ARM_BASE == 0x06200000UL);
 
-XACP_STATIC_ASSERT(xmid_arm_shared_end,
-    XACP_ARM_XMID_SHARED_END == 0x06500000UL);
+XACP_STATIC_ASSERT(xmid_shared_arm_end_is_0x06500000,
+    XMID_SHARED_ARM_END == 0x06500000UL);
 
 
-/* ARM-private v1.6 layout */
+/* Released-application collision checks ---------------------------------- */
 
-XACP_STATIC_ASSERT(core1_private_after_z3_visible,
-    XACP_ARM_CORE1_LEGACY_BASE == XACP_ARM_Z3_VISIBLE_END);
+XACP_STATIC_ASSERT(xmid_corridor_starts_after_zzdoom_heap,
+    XMID_SHARED_ARM_BASE >= XACP_ARM_ZZDOOM_HEAP_END);
 
-XACP_STATIC_ASSERT(core1_private_is_16mb,
-    XACP_ARM_CORE1_LEGACY_SIZE == (16UL * 1024UL * 1024UL));
+XACP_STATIC_ASSERT(xmid_corridor_ends_before_zzdoom_saves,
+    XMID_SHARED_ARM_END <= XACP_ARM_ZZDOOM_SAVE_BASE);
 
-XACP_STATIC_ASSERT(core1_private_ends_at_sf2,
-    XACP_ARM_CORE1_LEGACY_END == XACP_ARM_XMID_SF2_BASE);
 
-XACP_STATIC_ASSERT(sf2_is_32mb,
-    XACP_ARM_XMID_SF2_SIZE == (32UL * 1024UL * 1024UL));
+/* Unsafe / safe ARM boundary --------------------------------------------- */
 
-XACP_STATIC_ASSERT(sf2_ends_at_midi,
-    XACP_ARM_XMID_SF2_END == XACP_ARM_XMID_MIDI_BASE);
+XACP_STATIC_ASSERT(z3_collision_ends_at_no_mans_land,
+    XACP_ARM_Z3_COLLISION_END == XACP_ARM_NO_MANS_LAND_BASE);
 
-XACP_STATIC_ASSERT(midi_is_6mb,
-    XACP_ARM_XMID_MIDI_SIZE == (6UL * 1024UL * 1024UL));
+XACP_STATIC_ASSERT(no_mans_land_ends_at_private_safe_base,
+    XACP_ARM_NO_MANS_LAND_END == XACP_ARM_PRIVATE_SAFE_BASE);
 
-XACP_STATIC_ASSERT(midi_ends_at_service_heap,
-    XACP_ARM_XMID_MIDI_END == XACP_ARM_SERVICE_HEAP_BASE);
 
-XACP_STATIC_ASSERT(service_heap_is_160mb,
-    XACP_ARM_SERVICE_HEAP_SIZE == (160UL * 1024UL * 1024UL));
+/* ZZPicoDrive private allocation ----------------------------------------- */
 
-XACP_STATIC_ASSERT(service_heap_ends_at_guard,
-    XACP_ARM_SERVICE_HEAP_END == XACP_ARM_V16_GUARD_BASE);
+XACP_STATIC_ASSERT(zzpico_starts_at_private_safe_base,
+    XACP_ARM_ZZPICO_PRIVATE_BASE == XACP_ARM_PRIVATE_SAFE_BASE);
 
-XACP_STATIC_ASSERT(v16_guard_is_10mb,
-    XACP_ARM_V16_GUARD_SIZE == (10UL * 1024UL * 1024UL));
+XACP_STATIC_ASSERT(zzpico_private_is_16mb,
+    XACP_ARM_ZZPICO_PRIVATE_SIZE == (16UL * 1024UL * 1024UL));
 
-XACP_STATIC_ASSERT(v16_guard_ends_at_0x30000000,
-    XACP_ARM_V16_GUARD_END == 0x30000000UL);
+XACP_STATIC_ASSERT(zzpico_private_ends_at_xmid_pool,
+    XACP_ARM_ZZPICO_PRIVATE_END == XMID_PRIVATE_POOL_BASE_ABS);
 
-XACP_STATIC_ASSERT(v16_private_base_is_0x22000000,
-    XACP_ARM_V16_PRIVATE_BASE == 0x22000000UL);
 
-XACP_STATIC_ASSERT(v16_private_end_is_0x30000000,
-    XACP_ARM_V16_PRIVATE_END == 0x30000000UL);
+/* ZZMIDI ARM-private allocation ------------------------------------------ */
+
+XACP_STATIC_ASSERT(xmid_sf2_is_32mb,
+    XMID_SF2_POOL_SIZE == (32UL * 1024UL * 1024UL));
+
+XACP_STATIC_ASSERT(xmid_sf2_ends_at_midi,
+    XMID_RAW_SF2_END_ABS == XMID_RAW_MIDI_BASE_ABS);
+
+XACP_STATIC_ASSERT(xmid_midi_is_6mb,
+    XMID_MIDI_POOL_SIZE == (6UL * 1024UL * 1024UL));
+
+XACP_STATIC_ASSERT(xmid_midi_ends_at_heap,
+    XMID_RAW_MIDI_END_ABS == XMID_HEAP_BASE_ABS);
+
+XACP_STATIC_ASSERT(xmid_heap_is_160mb,
+    XMID_HEAP_SIZE == (160UL * 1024UL * 1024UL));
+
+XACP_STATIC_ASSERT(xmid_heap_calculated_end_matches,
+    XMID_HEAP_BASE_ABS + XMID_HEAP_SIZE == XMID_HEAP_END_ABS);
+
+XACP_STATIC_ASSERT(xmid_heap_ends_at_guard,
+    XMID_HEAP_END_ABS == XACP_ARM_XMID_GUARD_BASE);
+
+XACP_STATIC_ASSERT(xmid_guard_is_10mb,
+    XACP_ARM_XMID_GUARD_SIZE == (10UL * 1024UL * 1024UL));
+
+XACP_STATIC_ASSERT(xmid_guard_ends_at_private_safe_end,
+    XACP_ARM_XMID_GUARD_END == XACP_ARM_PRIVATE_SAFE_END);
+
+XACP_STATIC_ASSERT(xmid_pool_starts_at_sf2,
+    XMID_PRIVATE_POOL_BASE_ABS == XMID_RAW_SF2_BASE_ABS);
+
+XACP_STATIC_ASSERT(xmid_pool_ends_at_0x30000000,
+    XMID_PRIVATE_POOL_END_ABS == 0x30000000UL);
+
+
+/* SMUSH boundary --------------------------------------------------------- */
+
+XACP_STATIC_ASSERT(smush_starts_after_private_safe_window,
+    XACP_ARM_SMUSH_BASE == XACP_ARM_PRIVATE_SAFE_END);
+
+XACP_STATIC_ASSERT(smush_is_48mb,
+    XACP_ARM_SMUSH_SIZE == (48UL * 1024UL * 1024UL));
 
 
 #ifdef __cplusplus
