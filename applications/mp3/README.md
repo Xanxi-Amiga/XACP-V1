@@ -89,6 +89,16 @@ The XACP-backed `mpega.library` work provides compatibility with software expect
 
 This belongs to the same XX16c audio baseline as ZZPlayGUI and the AmigaAMP engine.
 
+### License and provenance
+
+The XACP `mpega.library` is an independent implementation written from
+scratch for the XACP project. It does not contain code from the historical
+68k mpega.library implementation.
+
+It is distributed as closed-source freeware.
+
+See `LICENSE_MPEGA.txt` for details.
+
 ---
 
 ## Shared-memory areas
