@@ -22,8 +22,7 @@ through the Zorro bus.
   bandwidth bars (MB/s).
 - **Single universal binary.** `ZZBenchGUI` is built for `-m68020 -m68881` and
   runs on **68020 / 68030 / 68040 / 68060**. The real CPU and FPU are detected
-  at runtime. There is **one** release binary; a 68060 produces the same
-  numbers as any other 020+ host.
+  at runtime. The same binary runs on all 020+ hosts.
 - **Self-contained.** The ARM benchmark blob is embedded in the executable -
   nothing else to copy.
 - **Honest numbers.** Peak-performance measurement, not a CPU-usage meter.
