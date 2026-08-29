@@ -1,3 +1,12 @@
+/*
+ * XACP - eXtended ARM Coprocessor Protocol
+ *
+ * Copyright (C) 2026 Xanxi
+ *
+ * SPDX-License-Identifier: 0BSD
+ */
+
+
 #ifndef XACP_MEMORY_MAP_V1_6_H
 #define XACP_MEMORY_MAP_V1_6_H
 
