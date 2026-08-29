@@ -1,224 +1,155 @@
-
-# XACP v1.5
+# XACP v1.6
 
 **eXtended ARM Coprocessor Protocol for the MNT ZZ9000 Amiga RTG board.**
 
-XACP is the shared protocol, ABI and memory-map convention used by the Xanxi ZZ9000 firmware branch and its Amiga-side applications.
+XACP is an independent software platform built around the ARM Cortex-A9 processors and DDR memory of the ZZ9000.
 
-It uses the ARM Cortex-A9 cores inside the ZZ9000's Xilinx Zynq-7020 to offload multimedia and compute workloads from the Amiga 68k CPU, while AmigaOS keeps control of display, input, audio output, files, GUI and system integration.
+It allows Amiga applications to offload CPU-intensive workloads to the ZZ9000 while AmigaOS remains responsible for system integration such as RTG display, input, files, GUI, AHI audio and CAMD MIDI.
 
-XACP v1.5 is the current validated multimedia baseline.
+The current public baseline is:
+
+```text
+Firmware:  XX19a
+Protocol:  XACP v1.6
+```
+
+Firmware build numbers and XACP versions are deliberately separate.
+
+**XX19a is the firmware build. XACP v1.6 is the protocol, ABI and shared-memory baseline implemented by that firmware.**
 
 ---
 
-## Versioning
+## XACP architecture
 
-XACP protocol versions and ZZ9000 firmware build numbers are separate.
+The ZZ9000 contains a Xilinx Zynq-7020 with two ARM Cortex-A9 cores and its own DDR memory.
 
-```text
-XACP v1.5 = protocol / ABI / shared-memory map / documentation baseline
+XACP uses this hardware in two complementary ways.
 
-XX16c     = firmware build line for MP3 / MP2 / ZZMPEG
-XX18c     = firmware build line for the ZZDoom public baseline
-XX18m     = firmware build introducing ZZMIDI and fixing ZZ9000AX cold-boot init
-XX19      = firmware build implementing the public XACP v1.5 baseline
-```
+### Core0 services
 
-Public release naming:
+Persistent services can run as part of the ZZ9000 firmware and expose operations to Amiga-side applications through XACP commands and shared memory.
+
+Examples include:
 
 ```text
-BOOT_ZZ9000_XX19_XACP_v1.5.bin
+MP3 / MP2 decoding
+MIDI / SoundFont synthesis
+shared audio buffers
+firmware-side multimedia services
 ```
 
-GitHub release tag:
+### Core1 applications
+
+The second ARM core can be dynamically loaded with complete application engines.
+
+This model is used for workloads such as:
 
 ```text
-v1.5.0
+ZZDoom
+ZZPicoDrive
+Julia / fractal rendering
+video decoding
+benchmarks
+experimental game engines
 ```
 
-Do not refer to "firmware v1.5" or "XACP XX19" as if they were the same thing.
-
-XX19 is the firmware. XACP v1.5 is the protocol and memory-map baseline implemented by that firmware.
+The ARM performs the heavy computation while AmigaOS remains the host operating environment.
 
 ---
 
-## Validated feature line
+## XACP v1.6
 
-XACP currently covers:
+XACP v1.6 formalizes the shared DDR layout used simultaneously by firmware services and dynamically loaded Core1 applications.
+
+Earlier XACP versions grew progressively as new applications were added. Individual projects therefore reserved DDR areas independently, creating the possibility of collisions between persistent firmware services, Core1 application data, framebuffers, ROM areas, save buffers and firmware-private memory.
+
+XACP v1.6 turns this shared DDR layout into an explicit part of the ABI.
+
+The v1.6 baseline provides:
 
 ```text
-ARM MP3 decoding
-MP3 streaming pipeline
-MP2 audio path
-AmigaAMP external engine path: zz9000.engine
-mpega.library XACP integration
-Core1 dynamic launch
-Fractal / JuliaV2 rendering
-Shared DDR mailbox
-XACP opcode protocol
-ZZMPEG MPEG-1 video player with MP2 audio
-ZZDoom Core1 Doom port
-ZZBench GUI CPU and memory-bandwidth benchmark
-ZZMIDI SoundFont playback path
-XACP v1.5 shared multimedia memory map
+defined ownership of shared DDR regions
+separation of Core0 service memory and Core1 application memory
+protected ZZMIDI SoundFont and MIDI staging areas
+protected firmware-private memory
+defined Core1 blob and application work areas
+separation of framebuffers, ROM/data buffers and persistent save areas
+room for future XACP services without silently reusing existing regions
 ```
+
+This is an architectural change rather than an application-specific workaround.
+
+New XACP applications should use the v1.6 memory-map definitions rather than introducing undocumented DDR addresses.
 
 ---
 
-## Firmware history
+## Current firmware
 
-### XX16c — audio, MP2 and early Core1 baseline
-
-XX16c is the first major public XACP multimedia baseline.
-
-Validated work:
+The current firmware is:
 
 ```text
-MP3 decoding
-MP3 streaming pipeline
-MP2 audio support
-AmigaAMP external engine: zz9000.engine
-mpega.library XACP integration work
-ZZMPEG MPEG-1 / MP2 playback path
-JuliaV2 / Core1 validation path
+firmware/BOOT_XX19a.bin
 ```
 
-### XX18c — ZZDoom baseline
+XX19a implements the XACP v1.6 baseline while retaining the established XACP multimedia and Core1 infrastructure.
 
-XX18c is the ZZDoom-era public firmware baseline.
-
-Validated work:
+Older firmware builds are preserved for historical and compatibility purposes in:
 
 ```text
-Core1 application launch
-shared DDR command path
-deferred PAN / fullscreen RTG synchronization
-ZZDoom 320x200 and 640x400
-AHI sound effects
-CAMD external MIDI path
-save/load through AmigaOS files
+firmware/archive/
 ```
 
-### XX18m — first ZZMIDI firmware line
-
-XX18m is the firmware line that introduced the ZZMIDI work into the public XACP tree.
-
-Validated work:
+See:
 
 ```text
-initial ZZMIDI / SoundFont firmware path
-OP_MIDI_SF2 = 0x0120 groundwork
-ZZMIDI daemon / player integration work
-ZZ9000AX cold-boot initialization fix
+firmware/README.md
 ```
 
-The ZZ9000AX cold-boot fix is historically important: earlier builds could require a reset after cold power-on before the card initialized correctly. XX18m fixed that initialization issue.
-
-### XX19 — XACP v1.5 baseline
-
-XX19 is the public firmware baseline implementing the XACP v1.5 multimedia memory map.
-
-Validated work:
-
-```text
-ZZMIDI SoundFont playback path
-OP_MIDI_SF2 = 0x0120
-SF2 staging fixed at 32 MB
-MIDI staging moved after SF2
-private ARM pool documented
-large SoundFont playback stabilized
-persistent SF2 across Next / Previous
-```
-
-XX19 replaces the internal XX18t development naming for the public release.
-
----
-
-## Repository contents
-
-```text
-firmware/       XACP-enabled ZZ9000 firmware binaries
-docs/           protocol notes, memory maps and historical documentation
-sdk/            headers and SDK material for XACP clients
-applications/   Amiga-side applications and tools
-```
+for firmware-specific information.
 
 ---
 
 ## Applications
 
-### MP3 / AmigaAMP / mpega.library
+XACP has evolved from an experimental coprocessor protocol into a general ARM acceleration platform for the ZZ9000.
 
-ARM-side MP3 decoding through the ZZ9000, with Amiga-side playback through AHI.
+Current and historical projects in this repository include:
 
-This path includes:
+| Project                       | Role                                                         |
+| ----------------------------- | ------------------------------------------------------------ |
+| **ZZMIDI**                    | SoundFont MIDI synthesis on the ZZ9000 ARM with AHI playback |
+| **ZZPicoDrive**               | Mega Drive / Genesis emulation using ZZ9000 Core1            |
+| **ZZDoom**                    | Doom engine running on ZZ9000 Core1                          |
+| **ZZSpeech**                  | Speech synthesis accelerated by the ZZ9000                   |
+| **ZZ-MPEG**                   | MPEG-1 video and MP2 audio playback                          |
+| **ZZPlayGUI / MP3 tools**     | ARM-accelerated MP3 / MP2 decoding                           |
+| **zz9000.engine**             | AmigaAMP external engine using XACP                          |
+| **mpega.library integration** | MPEGA-compatible ARM decode path                             |
+| **ZZBench GUI**               | 68k, ARM and memory-bandwidth benchmarking                   |
+| **JuliaV2**                   | Core1 launch, rendering and clean-return validation          |
+| **Legacy fractal demos**      | Early XACP / Core1 graphical experiments                     |
 
-```text
-zz9000.engine    AmigaAMP external engine for XACP playback
-mpega.library    XACP-backed mpega.library work
-```
-
-Location:
-
-```text
-applications/mp3/
-```
-
-### ZZMPEG
-
-MPEG-1 Program Stream player for Amiga + ZZ9000.
-
-Video is decoded on the ZZ9000 ARM/Core1. MP2 audio is decoded through XACP and played through AHI.
-
-Location:
+Application-specific documentation and release material are stored under:
 
 ```text
-applications/mpegplayer/
+applications/
 ```
 
-### JuliaV2
+Not every application requires the same firmware generation. Historical applications are retained together with their original compatibility information.
 
-Fractal / Julia renderer and Core1 validation application.
+---
 
-JuliaV2 validated the basic Core1 application model later reused by heavier projects:
+## ZZMIDI
 
-```text
-Core1 launch
-shared DDR communication
-ARM-side rendering
-Amiga-side display integration
-clean stop / return path
-```
+ZZMIDI demonstrates the persistent-service side of XACP.
 
-### ZZDoom
+TinySoundFont runs on the ZZ9000 ARM side and performs SoundFont synthesis, while the Amiga application handles the user interface, files and AHI audio playback.
 
-`doomgeneric`-based Doom port for Amiga systems equipped with the ZZ9000.
+The current ZZMIDI generation supports SoundFont playback using the shared XACP MIDI service and the protected ZZMIDI memory regions defined by the protocol.
 
-The Doom engine runs on the ZZ9000 ARM Core1. AmigaOS handles RTG display, keyboard input, AHI sound effects, CAMD music path, file access and savegames.
+The XACP v1.6 memory model ensures that these persistent firmware resources can coexist with the memory requirements of Core1 applications without undocumented overlap.
 
-Location:
-
-```text
-applications/ZZDoom/
-```
-
-### ZZBench GUI
-
-Benchmark comparing the Amiga 68k CPU with the ZZ9000 ARM Core1 using Dhrystone, Whetstone and memory-bandwidth tests.
-
-Location:
-
-```text
-applications/benchmarks/
-```
-
-### ZZMIDI
-
-SoundFont MIDI playback path for XACP v1.5.
-
-The v0.5 release focuses on MIDI file playback with SoundFont support up to 32 MB and the corrected v1.5 memory map.
-
-Location:
+See:
 
 ```text
 applications/ZZMIDI/
@@ -226,97 +157,128 @@ applications/ZZMIDI/
 
 ---
 
-## XACP v1.5 memory map
+## ZZPicoDrive
 
-All addresses below are relative to:
+ZZPicoDrive demonstrates the complete Core1 application model.
 
-```text
-fb = board + 0x00010000
-```
+The emulation engine runs on ZZ9000 ARM Core1 while the Amiga side handles application launch, RTG integration, input, AHI audio, configuration and file operations.
 
-unless otherwise stated.
+See:
 
 ```text
-0x04000000  XACP command block / historical area
-0x04002000  MP3 / MP2 StreamControl
-
-0x04100000  MP3 input ring, 512 KB
-0x04200000  MP3 / MP2 PCM output ring, 1 MB
-
-0x04600000  ZZMIDI CAMD FIFO / event staging
-0x04800000  ZZMIDI PCM ring, 1 MB
-
-0x05800000  ZZMIDI SF2 staging start
-0x07800000  ZZMIDI SF2 staging end / MIDI staging start
-0x07E00000  MIDI staging end / ARM firmware C heap start
+applications/emulators/ZZPicodrive/
 ```
 
-The key v1.5 correction is:
+---
+
+## ZZDoom
+
+ZZDoom is based on `doomgeneric`.
+
+The Doom engine runs on ZZ9000 ARM Core1 while AmigaOS provides RTG display, keyboard input, AHI sound effects, MIDI integration, file access and savegames.
+
+ZZDoom was one of the applications that established the dynamic Core1 execution model later reused by other XACP projects.
+
+---
+
+## Repository structure
 
 ```text
-SF2  staging : fb+0x05800000 - fb+0x07800000 = 32 MB
-MIDI staging : fb+0x07800000 - fb+0x07E00000 = 6 MB
+applications/   Amiga applications, Core1 programs and release material
+docs/           XACP protocol, architecture and historical documentation
+firmware/       Current firmware, firmware documentation and archive
+sdk/            Headers and material for XACP developers
+CHANGELOG.md    Project history
+README.md       Current XACP overview
 ```
 
-This fixes the previous overlap where large SoundFont files above approximately 24 MB could collide with the MIDI staging area.
+Historical material is retained where useful, but the top-level directories are intended to represent the current XACP structure.
 
-Private ARM pool:
+---
+
+## Versioning
+
+XACP protocol versions and firmware build numbers are separate.
+
+Examples:
 
 ```text
-0x22000000 - 0x26000000  raw private copy area, 64 MB
-0x26000000 - 0x30000000  TSF / TML / service heap, 160 MB
+XX16c     early MP3 / MP2 / ZZMPEG firmware line
+XX18c     public ZZDoom firmware baseline
+XX18m     first ZZMIDI firmware line
+XX19      XACP v1.5 public baseline
+XX19a     XACP v1.6 public baseline
 ```
 
-Do not reuse `0x20000000-0x22000000` for private ARM pools. This range can overlap AmigaOS-visible Z3 memory.
+Therefore:
+
+```text
+XX19a = firmware build
+XACP v1.6 = protocol / ABI / shared-memory baseline
+```
+
+They should not be described interchangeably as "firmware v1.6" or "XACP XX19a".
+
+---
+
+## Compatibility
+
+Do not assume that binaries from unrelated XACP generations are interchangeable.
+
+For released software, the safest combination is always:
+
+```text
+application
+firmware
+zz9000.card
+documentation
+```
+
+from a matching or explicitly validated release generation.
+
+After replacing the ZZ9000 firmware or `zz9000.card`, perform a complete power-off before testing.
+
+Incorrect combinations can result in missing XACP services, incorrect shared-memory offsets, silent audio, RTG corruption, crashes or lock-ups.
 
 ---
 
 ## Documentation
 
-Historical XACP V1 protocol documentation:
+Historical XACP documentation is retained under:
 
 ```text
-docs/XACP_V1_NOTICE.md
+docs/
 ```
 
-XACP v1.5 firmware history and memory-map documentation:
+The original XACP V1 material remains available for reference.
 
-```text
-docs/XACP_V1_5_HISTORY_MEMORY_MAP_PART2.md
-```
+XACP v1.5 documentation records the transition to the large SoundFont / MIDI shared-memory layout.
 
-Memory-map infographic:
+XACP v1.6 supersedes v1.5 as the current shared-memory and application-allocation baseline.
 
-```text
-docs/images/XACP_v1_5_memory_map.png
-```
+The SDK directory contains definitions intended to prevent applications from independently assigning conflicting shared DDR regions.
 
 ---
 
-## Firmware notes
+## Source availability
 
-Firmware binaries in this repository are Xanxi/XACP builds for ZZ9000 public use.
+XACP contains software with different origins and licensing requirements.
 
-Do not mix arbitrary firmware, `zz9000.card` files and application binaries from unrelated packages. Some applications depend on matching firmware features such as Core1 launch, deferred PAN, audio rings or the XACP v1.5 memory map.
+Firmware source publication is handled together with the applicable third-party source and license notices.
 
-After replacing firmware or `zz9000.card`, fully power off the Amiga before testing.
+Application source availability is independent from firmware source availability. Some Xanxi applications are distributed as binaries and documentation only, while third-party components retain their respective upstream licenses.
+
+Each application or source package should therefore be considered according to the license information distributed with that specific component.
+
+The XX19a firmware source package is being prepared for publication in this repository.
 
 ---
 
-## Roadmap
+## Development
 
-Planned follow-up work:
+XACP continues to be developed as a general-purpose acceleration platform for Amiga systems equipped with the ZZ9000.
 
-```text
-ZZMIDI CAMD realtime stabilization
-ZZSpeech using Flite
-PicoDrive MVP on Core1
-ZZReSID on Core1
-ZZQuake memory strategy
-Further ARM/Core1 multimedia services
-```
-
-These projects build on the XACP v1.5 baseline. They are not required for the current v1.5 release.
+Areas under active development include additional Core1 applications, emulation, game engines, multimedia services and an SDK intended to make the XACP execution model reusable by third-party Amiga developers.
 
 ---
 
@@ -324,20 +286,6 @@ These projects build on the XACP v1.5 baseline. They are not required for the cu
 
 XACP / Xanxi, 2026.
 
-Special thanks to Antony Mo for external testing and feedback during the XACP development cycle.
+Thanks to the MNT ZZ9000 project and to the Amiga and ZZ9000 communities for the hardware platform, testing, feedback and technical discussion.
 
-Special thanks to the Amiga and ZZ9000 communities for testing, feedback and technical inspiration.
-
-
-## Source availability
-
-This repository currently publishes the XACP v1.5 documentation baseline, memory-map definitions, SDK headers, application documentation and selected release files.
-
-Some historical application and firmware sources are still being cleaned up before publication.
-
-For this reason, the current v1.5.0 package should be considered a **public binary / documentation baseline**, not yet a complete source release of every historical Xanxi ZZ9000 application.
-
-Source publication will be handled progressively, application by application, as the code is cleaned up and third-party licensing requirements are reviewed.
-
-Do not assume that every binary mentioned in the documentation has its complete corresponding source code published in this repository yet.
-
+Third-party software included or used by individual XACP projects remains credited to its respective authors and retains its original license.
