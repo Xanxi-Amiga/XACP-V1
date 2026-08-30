@@ -1,0 +1,126 @@
+# ZZMIDI 1.0 LICENSE
+
+Copyright (c) 2026 Xanxi
+All rights reserved.
+
+1. ZZMIDI LICENSE
+
+---
+
+The Amiga-side ZZMIDI 1.0 programs are proprietary freeware.
+
+ZZMIDI may be used free of charge for personal and non-commercial or
+commercial use.
+
+2. REDISTRIBUTION
+
+---
+
+The original, unmodified ZZMIDI release archive may be redistributed
+freely, provided that:
+
+* the archive remains complete and unchanged;
+* this license file remains included;
+* all applicable third-party license notices remain included.
+
+Redistribution of modified ZZMIDI binaries is not permitted without
+prior authorization from the author.
+
+3. SOURCE CODE AND MODIFICATION
+
+---
+
+The source code of the current ZZMIDI 1.0 Amiga-side applications is
+not distributed.
+
+No permission is granted under this license to modify the ZZMIDI 1.0
+programs, create derivative versions of them, or redistribute modified
+ZZMIDI binaries.
+
+Historical ZZMIDIPlay v0.5 source code was previously published and is
+retained separately for historical reference. Its availability does not
+make ZZMIDI 1.0 open source and does not grant rights over the current
+ZZMIDI 1.0 applications.
+
+4. THIRD-PARTY SOFTWARE COMPATIBILITY
+
+---
+
+Third-party software may freely communicate with and use ZZMIDI through
+its documented interfaces, including its CAMD and command-line
+interfaces.
+
+No permission from the author is required merely to make another
+application compatible with ZZMIDI.
+
+5. BUNDLING AND INTEGRATION
+
+---
+
+Developers or distributors wishing to embed, bundle, integrate or
+redistribute ZZMIDI itself as part of another software package,
+distribution or product should contact the author for permission.
+
+This restriction does not apply to software that merely communicates
+with ZZMIDI through its documented interfaces.
+
+6. FIRMWARE
+
+---
+
+The XACP / ZZ9000 firmware is a separate software project and is
+distributed under its own licensing terms.
+
+This ZZMIDI license does not alter, replace or restrict the license of
+the XACP firmware.
+
+7. THIRD-PARTY COMPONENTS
+
+---
+
+ZZMIDI uses third-party components which retain their respective
+copyrights and licenses.
+
+These include, where applicable:
+
+TinySoundFont
+Copyright Bernhard Schelling
+MIT License
+
+TinyMidiLoader
+Copyright Bernhard Schelling
+zlib License
+
+SoundFonts and other data files distributed with ZZMIDI retain their
+own respective licenses.
+
+In particular, TimGM6mb.sf2 is distributed under its own licensing
+terms. See the corresponding license file included with the binary
+distribution.
+
+Nothing in this ZZMIDI license overrides or replaces the license terms
+of third-party components or data files.
+
+8. DISCLAIMER
+
+---
+
+ZZMIDI is provided "AS IS", without warranty of any kind, express or
+implied, including but not limited to warranties of merchantability,
+fitness for a particular purpose and non-infringement.
+
+In no event shall the author be liable for any claim, damages or other
+liability arising from the use of ZZMIDI.
+
+9. AUTHOR
+
+---
+
+ZZMIDI
+Copyright (c) 2026 Xanxi
+All rights reserved.
+
+ZZ9000 is a product of MNT Research GmbH.
+
+ZZMIDI is an independent software project and is not an official
+MNT Research product.
