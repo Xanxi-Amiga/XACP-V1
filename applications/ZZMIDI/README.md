@@ -1,188 +1,313 @@
-# ZZMIDIPlay
+# ZZMIDI
 
-ZZMIDIPlay v0.5 for XACP v1.5
-SoundFont MIDI playback for Amiga systems equipped with the MNT ZZ9000 and the Xanxi/XACP firmware branch.
+**ZZMIDI 1.0** is a General MIDI SoundFont synthesizer for Amiga systems equipped with an **MNT ZZ9000** running **XACP-compatible firmware**.
 
-ZZMIDIPlay is a GUI MIDI file player built around the inclusion of TinySoundFont in the ZZ9000 XX19 firmware. The Amiga-side application provides the user interface, playlist handling, file selection and AHI playback, while the ZZ9000 ARM side performs the SoundFont synthesis.
+The Amiga sends MIDI data to the ZZ9000, where the ARM Cortex-A9 runs the SoundFont synthesis engine. Audio is returned to the Amiga and played through **AHI**, leaving the 68k CPU almost completely free for the application or game.
 
-MIDI files and SoundFont banks are staged through the XACP v1.5 shared-memory map. The firmware-side MIDI/SF2 service renders the MIDI stream through TinySoundFont, then writes PCM audio back to the Amiga side for playback through AHI.
-
-This release focuses on MIDI file playback with SoundFont support up to 32 MB and the corrected XACP v1.5 memory map.
+ZZMIDI supports standard **CAMD** applications, standalone MIDI file playback, and ZZDoom integration.
 
 ---
 
-## Firmware baseline
+## Features
 
-Required firmware line:
+* General MIDI SoundFont synthesis on the ZZ9000 ARM
+* SoundFont 2 (`.sf2`) banks up to **10 MiB**
+* 64 voices
+* 32 kHz, 16-bit stereo output through AHI
+* realtime CAMD service
+* GadTools preferences/control panel
+* Shell control tools
+* standalone MIDI player: **ZZMIDIPlay**
+* SoundFont analyser: **ZZSF2Info**
+* ZZDoom compatibility and Core1 launch protection through **ZZMIDIGate**
+* very low 68k CPU usage
 
-```text id="3v0xfn"
-XX19
-```
+Applications using standard CAMD clusters can use ZZMIDI without being specifically written for it.
 
-Protocol / memory-map baseline:
+Examples include:
 
-```text id="k1dbbz"
-XACP v1.5
-```
-
-ZZMIDIPlay v0.5 requires the XACP v1.5 SoundFont / MIDI staging map.
-
----
-
-## Included tool
-
-This release contains:
-
-```text id="83svpr"
-ZZMIDIPlay
-```
-
-ZZMIDIPlay is a Workbench / GUI MIDI player.
-
-The daemon, command-line controller and realtime CAMD path are not part of this v0.5 release package.
+* OpenDune
+* DarkForces
+* DoomAttack (with CAMDDoomSound patch)
+* MIDIKeys virtual keyboard
+* CAMD MIDI players and sequencers
+* ZZDoom through ZZMIDIGate
 
 ---
 
-## Main features
+## Firmware requirement
 
-```text id="gq75r2"
-GUI MIDI file player
-SoundFont playback through the ZZ9000 ARM side
-SoundFont support up to 32 MB
-MIDI file staging up to 6 MB
-AHI playback on the Amiga side
-corrected XACP v1.5 memory map
-```
+ZZMIDI 1.0 requires:
 
----
+* **XACP v1.6 / firmware XX19a or later**, or
+* another firmware explicitly documented as compatible with the ZZMIDI/XACP interface.
 
-## SoundFont and MIDI limits
+Firmware:
 
-XACP v1.5 supports:
+**Firmware XX19a / XACP v1.6**
 
-```text id="bj5w5h"
-SF2 staging size: 32 MB
-MIDI staging size: 6 MB
-```
+https://github.com/Xanxi-Amiga/XACP-ZZ9000/releases/tag/XX19a
 
-Very large SoundFonts above 32 MB are not part of the v0.5 target.
+### Important
+
+ZZMIDI 1.0 is **not compatible with the official MNT ZZ9000 firmware 1.13**.
+
+ZZMIDI 1.0 is **not compatible with BlitterStudio firmware releases**, unless a future firmware is explicitly documented as XACP-compatible.
+
+Do not assume that a firmware is compatible merely because it runs on a ZZ9000.
 
 ---
 
-## XACP opcode
+## Requirements
 
-ZZMIDIPlay uses:
-
-```text id="uk5q2g"
-OP_MIDI_SF2 = 0x0120
-```
-
-This opcode is implemented by the XX19 firmware line for the XACP v1.5 release.
-
----
-
-## XACP v1.5 memory map
-
-All addresses below are relative to:
-
-```text id="7ekm1w"
-fb = board + 0x00010000
-```
-
-ZZMIDI control and audio areas:
-
-```text id="6z1z7f"
-fb+0x04010000  ZZMIDI control block
-fb+0x04800000  ZZMIDI PCM ring, 1 MB
-```
-
-SoundFont and MIDI staging:
-
-```text id="gnn6w8"
-fb+0x05800000  SF2 staging start
-fb+0x07800000  SF2 staging end / MIDI staging start
-fb+0x07E00000  MIDI staging end / firmware C heap start
-```
-
-The key XACP v1.5 correction is:
-
-```text id="nvdnh3"
-SF2  staging : fb+0x05800000 - fb+0x07800000 = 32 MB
-MIDI staging : fb+0x07800000 - fb+0x07E00000 = 6 MB
-```
-
-The old MIDI staging location must not be reused:
-
-```text id="hpdyof"
-fb+0x07000000
-```
-
-That old offset overlaps the last 8 MB of the 32 MB SF2 staging area.
+* AmigaOS 3.1 or later
+* 68020 or better
+* MNT ZZ9000
+* XACP v1.6 / XX19a or compatible firmware
+* AHI
+* `camd.library`
 
 ---
 
-## Compatibility notes
+## CAMD setup
 
-Use the matching XX19 firmware, matching `zz9000.card` and matching ZZMIDIPlay binary from the same release package.
+ZZMIDI realtime MIDI operation requires `camd.library`.
 
-Do not mix unrelated ZZMIDI binaries with older firmware builds.
+The standard CAMD package is available from Aminet:
 
-After replacing firmware or `zz9000.card`, fully power off the Amiga before testing.
+https://aminet.net/mus/midi/camd.lha
 
-A mismatched package may cause:
+Installing `camd.library` alone is **not enough**.
 
-```text id="rme00d"
-missing OP_MIDI_SF2 service
-wrong memory offsets
-SF2 / MIDI staging overlap
-silent playback
-crash or lock-up during MIDI loading
-```
-
----
-
-## User guide
-
-A detailed ZZMIDIPlay GUI user guide will be provided separately.
-
----
-
-## Relation to XACP v1.5
-
-ZZMIDIPlay is the first public application to require the corrected XACP v1.5 multimedia memory map.
-
-It is the reason the v1.5 map freezes:
-
-```text id="iefls0"
-SF2  staging at fb+0x05800000, 32 MB
-MIDI staging at fb+0x07800000, 6 MB
-hard end before firmware heap at fb+0x07E00000
-```
-
-Future XACP services must not reuse the ZZMIDI staging area without explicitly changing the protocol version.
-
----
-
-## Credits
-
-## Credits
-
-ZZMIDIPlay and the XACP / ZZ9000 integration are developed by **Xanxi**.
-
-ZZMIDIPlay uses the following third-party components:
+Run the **MidiPorts** preferences program included with the CAMD package and associate the standard CAMD clusters:
 
 ```text
-TinySoundFont
-  SoundFont 2 synthesis library by Bernhard Schelling.
-  Used for SF2 instrument rendering on the ZZ9000 ARM side.
-  License: MIT.
-
-TinyMidiLoader
-  Minimal Standard MIDI File parser by Bernhard Schelling.
-  Used for loading and parsing MIDI files before synthesis.
-  License: zlib.
+out.0
+in.0
 ```
 
-Original third-party license notices must be preserved in source distributions and should be included in binary release packages.
+with the **Amiga serial port**, then save the configuration.
 
-Created for the Amiga and ZZ9000 community.
+ZZMIDI listens to `out.0` by default.
+
+---
+
+## AHI configuration for games
+
+If a game uses AHI for sound effects or speech **in addition to ZZMIDI music**, configure:
+
+```text
+AHI Unit 0: 2 channels
+```
+
+Do **not** use a single channel in this situation.
+
+With only one channel, the game audio and ZZMIDI can compete for the same AHI output and cause audio failures or other problems.
+
+---
+
+## ZZDoom and ZZMIDIGate
+
+ZZMIDIGate is provided to ensure that **ZZMIDI works correctly with
+ZZDoom**.
+
+ZZDoom launches code on the second ARM core of the ZZ9000. Starting
+ZZDoom while the ZZMIDI realtime engine is active can cause a white
+screen or system lock-up.
+
+**ZZMIDIGate must therefore be launched BEFORE ZZDoom.**
+
+Procedure:
+
+1. Start ZZMIDI normally.
+
+2. Run:
+
+```text
+ZZMIDIGate
+```
+
+3. Wait for:
+
+```text
+*** realtime paused -- LAUNCH CORE1 APP NOW ***
+```
+
+4. Only then launch ZZDoom.
+
+ZZMIDIGate pauses ZZMIDI realtime before the Core1 startup, waits until
+ZZDoom is actually running and its video path is in a stable state, then
+restores and verifies ZZMIDI realtime so that ZZDoom can use ZZMIDI
+music normally.
+
+ZZMIDIGate remains running while ZZDoom is active.
+
+When Doom exits, ZZMIDIGate detects the exit, performs a ZZMIDI
+`RT_OFF` / `RT_ON` re-prime, verifies that the service has been restored,
+and then exits.
+
+### Other Core1 applications
+
+ZZMIDIGate can also prevent crashes when another ZZ9000 **Core1
+application** is launched while ZZMIDI is running, even if that
+application does not use MIDI.
+
+Examples include **ZZPicoDrive** and **ZZRastan**.
+
+In this case:
+
+1. Launch ZZMIDIGate first.
+2. Wait for the `LAUNCH CORE1 APP NOW` message.
+3. Launch the Core1 application.
+4. Quit the Core1 application.
+5. Return to the ZZMIDIGate Shell and press **Ctrl-C**.
+
+ZZMIDIGate then restores ZZMIDI realtime and exits.
+
+Do not close ZZMIDIGate before the Core1 application has finished.
+---
+
+## Included applications
+
+The ZZMIDI 1.0 release includes:
+
+### ZZMIDIDaemon
+
+Resident realtime SoundFont synthesis service.
+
+### ZZMIDICAMDIn
+
+CAMD receiver feeding realtime MIDI events to ZZMIDI.
+
+### ZZMIDIPrefs
+
+Workbench/GadTools control panel for selecting a SoundFont and starting, stopping or restarting the service.
+
+### ZZMIDIctl
+
+Shell control utility.
+
+### ZZMIDIGate
+
+Helper for safely using ZZMIDI together with ZZDoom and other ZZ9000 Core1 applications.
+
+### ZZMIDIPlay
+
+Standalone GUI MIDI file player using the ZZ9000 SoundFont engine.
+
+ZZMIDIPlay lets you listen to MIDI files **without starting the realtime
+CAMD synthesizer service**.
+
+It loads and uses a SoundFont directly, independently of
+ZZMIDIDaemon / ZZMIDICAMDIn.
+
+Typical use:
+
+1. Launch ZZMIDIPlay.
+2. Use the **rightmost button** to select and load a SoundFont (`.sf2`).
+3. Add one or more MIDI files to the playlist.
+4. Play them directly through the ZZ9000 synthesis engine and AHI.
+
+This makes ZZMIDIPlay useful both as a simple standalone MIDI player and
+as a convenient way to audition a SoundFont before using it with the
+realtime CAMD service.
+
+### ZZSF2Info
+
+SoundFont analysis utility reporting size and synthesis complexity.
+
+---
+
+## SoundFonts
+
+The ZZMIDI realtime service accepts SoundFont 2 banks up to:
+
+```text
+10 MiB
+10485760 bytes
+```
+
+For ZZMIDI 1.0:
+
+* avoid spaces in SoundFont paths
+* keep paths below approximately 250 characters
+* plain ASCII names are recommended
+* on classic FFS partitions, keep individual file names within the filesystem limits
+
+`ZZSF2Info` can be used to inspect a SoundFont before loading it.
+
+---
+
+## Historical versions
+
+The original public **ZZMIDIPlay v0.5** release targeted:
+
+```text
+XACP v1.5
+Firmware XX19
+```
+
+Its source code and documentation are retained for historical reference under:
+
+```text
+archive/ZZMIDIPlay-v0.5/
+```
+
+**ZZMIDIPlay v0.5 is not compatible with the current XACP v1.6 / XX19a baseline.**
+
+It uses the older XACP v1.5 shared-memory layout and must not be used with
+ZZMIDI 1.0 or current XACP v1.6 firmware.
+
+Use the current ZZMIDI 1.0 `ZZMIDIPlay` instead.
+
+---
+
+## Download
+
+Binary releases are provided through the GitHub **Releases** section.
+
+The ZZMIDI 1.0 distribution is supplied as an Amiga `.lha` archive containing the programs, documentation and applicable third-party license notices.
+
+---
+
+## License
+
+### ZZMIDI 1.0
+
+ZZMIDI 1.0 is **proprietary freeware**.
+
+Copyright © 2026 Xanxi.
+All rights reserved.
+
+The current Amiga-side ZZMIDI application source code is **not distributed**.
+
+Third-party applications may freely use ZZMIDI through its documented CAMD and command-line interfaces.
+
+Developers wishing to embed, bundle, integrate or redistribute ZZMIDI itself as part of another software package or distribution are welcome to contact the author for permission.
+
+The historical ZZMIDIPlay v0.5 source remains available in the archive because it was previously published. Its presence does not make ZZMIDI 1.0 open source.
+
+### Firmware
+
+The XACP / XX19a firmware is a separate project and is distributed under its own open-source licensing terms.
+
+### Third-party components
+
+ZZMIDI uses:
+
+* **TinySoundFont** by Bernhard Schelling — MIT License
+* **TinyMidiLoader** by Bernhard Schelling — zlib License
+
+Additional data files included in binary distributions retain their respective original licenses.
+
+---
+
+## Author
+
+**Xanxi**
+
+2026
+
+ZZ9000 is a product of MNT Research GmbH.
+
+ZZMIDI is an independent software project and is not an official MNT Research product.
