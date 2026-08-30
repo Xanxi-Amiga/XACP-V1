@@ -12,9 +12,11 @@ core1/
     Doom/DoomGeneric engine and ZZ9000 ARM Core1 integration.
 ```
 
+---
+
 ## ARM Core1 source
 
-The `core1/` directory is the Corresponding Source for the ARM binaries embedded in the released ZZDoom executables.
+The `core1/` directory contains the source used to build the ARM binaries embedded in the released ZZDoom executables.
 
 The source tree is based on DoomGeneric, with the upstream baseline corresponding to commit:
 
@@ -25,17 +27,19 @@ dcb7a8dbc7a16ce3dda29382ac9aae9d77d21284
 and includes the ZZ9000-specific changes required for:
 
 * execution on the ZZ9000 ARM Cortex-A9 Core1;
-* MMU/cache setup;
+* MMU and cache setup;
 * shared-memory communication with the Amiga;
 * framebuffer handling;
 * keyboard and mouse input;
 * AHI sound-effect transport;
-* CAMD-oriented music integration;
+* MIDI integration with the Amiga side;
 * WAD access from shared memory;
 * savegame support;
 * Doom and Doom II selection.
 
-The full source tree is included locally. Fetching a separate DoomGeneric checkout is not required to build it.
+The complete source tree required for the ARM build is included locally.
+
+Fetching a separate DoomGeneric checkout is not required.
 
 ---
 
@@ -74,11 +78,9 @@ arm-none-eabi-gcc 13.2.1 20231009
 newlib 4.4.0.20231231
 ```
 
-The distribution-packaged newlib configuration is relevant for exact binary reproduction.
+The distribution-packaged newlib configuration matters for exact binary reproduction.
 
 Using another GCC/newlib distribution may produce a functionally valid binary but will not necessarily reproduce the historical hashes.
-
-In particular, exact reproduction should use the documented toolchain rather than assuming that every ARM GNU Toolchain 13.2 package contains an identical newlib build.
 
 ---
 
@@ -99,11 +101,11 @@ Then:
 
 The verification script checks the generated binaries against the release hashes listed above.
 
-The build scripts preserve several historical details that matter for byte-for-byte reproduction.
+Several historical build details are intentionally preserved because they affect byte-for-byte reproducibility.
 
 ### 320 build
 
-The DoomGeneric renderer is built for:
+The DoomGeneric renderer is compiled for:
 
 ```text
 320x200
@@ -119,7 +121,9 @@ The high-resolution DoomGeneric renderer/framebuffer build uses:
 
 For historical compatibility, `i_video.c` is compiled with the 320x200 DoomGeneric dimensions in the 640 build.
 
-The 640 build also preserves the historical object link ordering. In particular:
+The 640 build also preserves the historical object link ordering.
+
+In particular:
 
 ```text
 doomgeneric.o
@@ -179,13 +183,13 @@ Amiga host:
 m68k-amigaos-gcc
 ```
 
-The historical Amiga builds were made using the Bebbo GCC Amiga toolchain.
+The historical Amiga builds used the Bebbo GCC Amiga toolchain.
 
 ---
 
 ## License
 
-Doom/DoomGeneric-derived code remains under its original GNU GPL notices.
+Doom and DoomGeneric derived files retain their original copyright and GNU GPL notices.
 
 ZZDoom-specific source code in this release is distributed under the GNU General Public License, version 2 or later.
 
