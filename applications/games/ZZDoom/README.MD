@@ -1,139 +1,136 @@
 # ZZDoom for ZZ9000 V1.1
 
-**ZZDoom** is a `doomgeneric`-based Doom port for Amiga systems equipped with the **MNT ZZ9000**.
+**ZZDoom** is a Doom port for Amiga systems equipped with the **MNT ZZ9000**.
 
-It is not a normal 68k Doom port. The Doom engine runs on the ZZ9000’s ARM Core1, while AmigaOS handles the system integration: RTG display, input, AHI sound, CAMD music, file access and savegames.
+It is not a conventional 68k Doom port. The Doom engine runs on the ZZ9000 ARM Cortex-A9 Core1, while AmigaOS handles system integration including RTG display, input, AHI sound, CAMD MIDI music, file access and savegames.
 
-This public release is fully playable and includes the essential pieces needed for a useful Amiga/ZZ9000 build: video, controls, sound effects, MIDI music path, save/load and low 68k CPU usage.
+ZZDoom is based on **DoomGeneric / Doom source code** and includes ZZ9000-specific adaptations for Core1 execution and communication with the Amiga host.
 
----
+## Source release
 
-## Changes in version 1.1
+The source code required to reproduce the ARM Core1 binaries distributed with ZZDoom is now available in the `source/` directory.
 
-* Fixed `OpenScreen failed` with recent Individual Computers Picasso96 versions.
-* Added more compatible Picasso96 screen opening.
-* Mouse pointer is now hidden during gameplay.
-* Fixed mouse button handling to avoid stuck fire/strafe buttons.
-* Left mouse button: fire.
-* Right mouse button: strafe.
-* No changes to WAD support, savegames, AHI sound, CAMD music, or ARM Core1 Doom engine.
+The historical release blobs have been successfully reproduced **byte-for-byte** from this source tree.
 
-Requires the matching XACP-compatible ZZ9000 firmware and `zz9000.card`.
+### ZZDoom320 ARM Core1 blob
 
-Firmware/card package:
-
-```
-https://github.com/Xanxi-Amiga/XACP-V1/releases/tag/XX19_firmware
-
+```text
+Size: 381396 bytes
+MD5:  8adf2938b3a7823d2d7005e0c9b8db8f
 ```
 
-Do not mix firmware/card/executables from different releases.
+### ZZDoom640 ARM Core1 blob
+
+```text
+Size: 381396 bytes
+MD5:  f3f4fcf1a4309205bffa15580daae7da
+```
+
+See:
+
+```text
+source/README.md
+docs/REPRODUCIBLE_BUILD.md
+docs/SOURCE_PROVENANCE.md
+```
+
+for build and source provenance information.
 
 ---
 
 ## Features
 
 * Doom engine running on the ZZ9000 ARM Core1.
-* Based on `doomgeneric`.
-* Fullscreen 4:3 RTG display.
+* Based on DoomGeneric / Doom source.
+* Fullscreen ZZ9000 RTG display.
 * `ZZDoom320` and `ZZDoom640` executables.
-* Tear-free fullscreen display using deferred PAN page flipping.
+* Deferred-PAN page flipping.
 * Low 68k CPU usage.
-* Keyboard controls, including function keys.
+* Keyboard and mouse controls.
 * AHI sound effects.
-* CAMD music support, tested with an external MIDI synth.
-* Future-ready path for ZZMIDI / SoundFont music support.
-* Save/load support through AmigaOS files in `PROGDIR:`.
-* Six save slots, named `save1` to `save6`.
-* `ZZDoom320` can be combined with `ZZScanlinesV2` for optional scanlines.
+* CAMD MIDI music support.
+* Save/load support through AmigaOS files.
+* Doom and Doom II support for WAD files within the current size limit.
+* Workbench and Shell launching.
 
-Tested gameplay sequence:
+---
 
-```text
-Intro / menu
-Level 1
-Intermission
-Level 2
-Return to menu
-Return to level 1
-Music transitions
-Sound effects
-Save / load
-```
+## ZZDoom V1.1
+
+Version 1.1 improved compatibility with recent Picasso96 versions and includes:
+
+* More compatible Picasso96 screen opening.
+* Fallback framebuffer allocation when required.
+* Mouse pointer hidden during gameplay.
+* Improved mouse button handling.
+* Left mouse button: fire.
+* Right mouse button: strafe.
+
+The ARM Core1 Doom engine embedded in V1.1 remained identical to the validated historical ARM release baseline.
 
 ---
 
 ## Requirements
 
 * Amiga with MNT ZZ9000.
-* XACP-enabled ZZ9000 firmware with Core1 launch, shared DDR communication and deferred PAN support.
-* Currently supported firmware package: **XX18c** from the Xanxi branch.
-* Matching `zz9000.card` supplied with the XX18c package.
-* RTG / Picasso96.
+* XACP-enabled ZZ9000 firmware with Core1 launch support.
+* Matching `zz9000.card`.
+* Picasso96 / RTG.
 * AHI.
-* `camd.library`.
-* External MIDI synth for music, or music disabled.
-* Your own legal Doom WAD.
+* `camd.library` for MIDI music.
+* External MIDI synthesizer for CAMD music, or music disabled.
+* Your own legally obtained Doom WAD.
 
-Standard MNT / Blittersoft firmware builds are not supported unless they include the required XACP/Core1/deferred-PAN features.
+Use a matching XACP firmware / `zz9000.card` combination. Mixing components from unrelated releases may result in display, synchronization or Core1 launch problems.
 
-Do not mix firmware, `zz9000.card` and ZZDoom executables from different packages. ZZDoom fullscreen output relies on a matched deferred-PAN implementation. Mixed versions may boot and run but can show severe screen tearing or refresh glitches.
+No Doom game data is included in this repository.
 
 ---
 
 ## Supported WADs
 
-For this first release, ZZDoom supports classic Doom WAD files under 16 MB.
-
-Currently intended / supported targets:
+Current intended targets include:
 
 ```text
-DOOM1.WAD   Shareware Doom
-DOOM.WAD    Registered / complete Doom
-DOOMU.WAD   Ultimate Doom
-DOOM2.WAD   Doom II
+DOOM1.WAD
+DOOM.WAD
+DOOMU.WAD
+DOOM2.WAD
 ```
 
-No commercial WAD is included. You must provide your own legal Doom WAD.
+The current ARM WAD area is limited to WAD files below 16 MB.
 
-Final Doom / Plutonia / TNT and larger WADs are not supported in this first release because the current WAD size limit is 16 MB. Expanding WAD support is planned later.
-
----
-
-## Known limitations
-
-* WAD size currently limited to less than 16 MB.
-* Doom II is playable, but there is currently a known rendering issue affecting some floor textures on some setups. This will be investigated in a later version.
-* Final Doom / Plutonia / TNT are not yet supported.
-* Requires the matched XX18c firmware and `zz9000.card`.
-* MIDWAN v2+ `zz9000.card` builds are currently not supported for ZZDoom deferred PAN.
-* Music currently uses CAMD with an external MIDI synth, or can be disabled.
-* Internal ZZMIDI / SoundFont music support is planned for a future release.
-* No commercial game data is included.
+Final Doom, TNT and Plutonia are therefore outside the supported WAD size range of this version.
 
 ---
 
 ## Installation
 
-Copy the release files to a directory on your Amiga:
+Copy the appropriate executable and your WAD to a directory on the Amiga.
+
+Example:
 
 ```text
 ZZDoom320
 ZZDoom320.info
-ZZDoom640
-ZZDoom640.info
 DOOM.WAD
 ```
 
-Install the matching XX18c firmware and matching `zz9000.card` from the same release package.
+or:
 
-Fully power off the Amiga after replacing firmware or `zz9000.card`.
+```text
+ZZDoom640
+ZZDoom640.info
+DOOM2.WAD
+```
+
+Install a matching XACP-enabled firmware and `zz9000.card`.
+
+A complete power-off is recommended after replacing ZZ9000 firmware or the RTG card driver.
 
 ---
 
-## Usage from Shell
-
-The Core1 blob is embedded in the executable. You only need to provide your Doom WAD.
+## Shell usage
 
 ```text
 ZZDoom320 DOOM.WAD
@@ -142,86 +139,106 @@ ZZDoom320 DOOM.WAD
 or:
 
 ```text
-ZZDoom640 DOOM.WAD
+ZZDoom640 DOOM2.WAD
+```
+
+Music can be disabled with:
+
+```text
+-nomusic
 ```
 
 ---
 
-## Usage from Workbench
+## Workbench usage
 
-You can place the WAD in the same directory as the executable and use an icon ToolType:
+Place the WAD in the program directory and use the icon ToolType:
 
 ```text
 WAD=DOOM.WAD
 ```
 
-Example setup:
+Optional ToolTypes include:
 
 ```text
-PROGDIR:ZZDoom320
-PROGDIR:ZZDoom320.info
-PROGDIR:DOOM.WAD
+NOMUSIC
+CAMDPORT=out.1
 ```
-
-Then start ZZDoom directly from Workbench.
 
 ---
 
 ## Music
 
-Music currently uses `camd.library` with an external MIDI synth, or can be disabled.
+Music is sent through `camd.library` to a MIDI output.
 
-Without an external MIDI synth, you will not hear music, but the game can still run.
+An external MIDI synthesizer can therefore be used directly.
 
-Internal ZZMIDI / SoundFont music support is planned for a future release.
+Without an external MIDI synthesizer, ZZDoom can be run with music disabled.
 
 ---
 
 ## Savegames
 
-Save/load is supported through AmigaOS files in `PROGDIR:`.
+Save/load is supported through AmigaOS files stored in the program directory.
 
-There are six save slots, named:
-
-```text
-save1
-save2
-save3
-save4
-save5
-save6
-```
-
-The actual save files are stored in the program directory.
+Six save slots are available.
 
 ---
 
-## Firmware note
+## Source layout
 
-ZZDoom requires the matched **XX18c XACP/deferred-PAN firmware** and the matching `zz9000.card`.
+```text
+source/amiga/
+```
 
-This is required because ZZDoom relies on:
+contains the Amiga-side launcher, CAMD and integration sources.
 
-* Core1 launch;
-* shared DDR communication;
-* deferred PAN page flipping;
-* stable framebuffer synchronization.
+```text
+source/core1/
+```
 
-Using another `zz9000.card` or another firmware may cause black screens, tearing, refresh glitches or missing features.
+contains the DoomGeneric/Doom ARM Core1 source tree and the ZZ9000-specific code used to build the embedded ARM binaries.
+
+The ARM source tree is intentionally kept close to the historical build layout to preserve reproducibility.
+
+---
+
+## Reproducible ARM builds
+
+The released ARM blobs are reproducible using the documented Debian/Ubuntu ARM bare-metal GCC/newlib toolchain.
+
+Running the supplied verification script after a successful build must produce:
+
+```text
+ZZDoom320:
+8adf2938b3a7823d2d7005e0c9b8db8f
+
+ZZDoom640:
+f3f4fcf1a4309205bffa15580daae7da
+```
+
+See `docs/REPRODUCIBLE_BUILD.md` for details.
+
+---
+
+## License
+
+The Doom / DoomGeneric derived source code is distributed under the GNU General Public License, version 2 or later, according to the notices contained in the source files.
+
+ZZDoom-specific source code published in this directory is also distributed under the GNU General Public License, version 2 or later.
+
+See `COPYING`.
+
+Doom game data, WAD files and other commercial assets are **not** part of this source release.
 
 ---
 
 ## Credits
 
-ZZDoom is based on the Doom source / `doomgeneric` family of ports, adapted for the ZZ9000 Core1 architecture.
+* id Software — Doom.
+* Simon Howard and Chocolate Doom contributors.
+* DoomGeneric contributors.
+* MNT Research — ZZ9000 hardware and original software ecosystem.
+* Amiga and ZZ9000 community testers and contributors.
 
-Special thanks to the Amiga and ZZ9000 communities for testing, feedback and technical inspiration.
-
----
-
-## Source and documentation
-
-Source code release is being prepared. This binary release is provided as an early technical preview for ZZ9000 users.
-
-GitHub: `https://github.com/Xanxi-Amiga`
-
+ZZDoom ZZ9000 adaptations and Amiga integration: Xanxi-Amiga.
