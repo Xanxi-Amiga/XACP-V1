@@ -33,10 +33,9 @@ See:
 ```text
 source/README.md
 docs/REPRODUCIBLE_BUILD.md
-docs/SOURCE_PROVENANCE.md
 ```
 
-for build and source provenance information.
+for build information.
 
 ---
 
