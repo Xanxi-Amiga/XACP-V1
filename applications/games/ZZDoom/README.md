@@ -4,11 +4,13 @@
 
 It is not a conventional 68k Doom port. The Doom engine runs on the ZZ9000 ARM Cortex-A9 Core1, while AmigaOS handles system integration including RTG display, input, AHI sound, CAMD MIDI music, file access and savegames.
 
-ZZDoom is based on **DoomGeneric / Doom source code** and includes ZZ9000-specific adaptations for Core1 execution and communication with the Amiga host.
+ZZDoom is based on **DoomGeneric and the original Doom source code**, adapted for the ZZ9000 Core1 architecture.
+
+---
 
 ## Source release
 
-The source code required to reproduce the ARM Core1 binaries distributed with ZZDoom is now available in the `source/` directory.
+The source code required to reproduce the ARM Core1 binaries distributed with ZZDoom is available in the `source/` directory.
 
 The historical release blobs have been successfully reproduced **byte-for-byte** from this source tree.
 
@@ -41,7 +43,7 @@ for build and source provenance information.
 ## Features
 
 * Doom engine running on the ZZ9000 ARM Core1.
-* Based on DoomGeneric / Doom source.
+* Based on DoomGeneric / Doom source code.
 * Fullscreen ZZ9000 RTG display.
 * `ZZDoom320` and `ZZDoom640` executables.
 * Deferred-PAN page flipping.
@@ -223,7 +225,7 @@ See `docs/REPRODUCIBLE_BUILD.md` for details.
 
 ## License
 
-The Doom / DoomGeneric derived source code is distributed under the GNU General Public License, version 2 or later, according to the notices contained in the source files.
+The Doom / DoomGeneric derived source code is distributed under the GNU General Public License according to the notices contained in the source files.
 
 ZZDoom-specific source code published in this directory is also distributed under the GNU General Public License, version 2 or later.
 
@@ -235,10 +237,8 @@ Doom game data, WAD files and other commercial assets are **not** part of this s
 
 ## Credits
 
-* id Software — Doom.
-* Simon Howard and Chocolate Doom contributors.
+* id Software — original Doom source code.
 * DoomGeneric contributors.
-* MNT Research — ZZ9000 hardware and original software ecosystem.
+* MNT Research — ZZ9000 hardware and software ecosystem.
 * Amiga and ZZ9000 community testers and contributors.
-
-ZZDoom ZZ9000 adaptations and Amiga integration: Xanxi-Amiga.
+* Xanxi-Amiga — ZZ9000/Core1 adaptations and Amiga integration.
