@@ -1,5 +1,4 @@
-/* MMU diagnostic helpers - reconstructed from the release blob disassembly.
-   Exact CP15 reads as found at 0x0420DEE0.. in julia_doom_320.bin. */
+/* ARM Cortex-A9 MMU diagnostic helpers. */
 typedef unsigned int u32;
 
 u32 read_sctlr(void){ u32 r; __asm__ volatile("mrc p15,0,%0,c1,c0,0":"=r"(r)); return r; }
