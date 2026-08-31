@@ -1,137 +1,263 @@
 # XACP MP3 / MP2 Audio Tools
 
-This directory contains the XACP audio tools and integration files for the Xanxi ZZ9000 firmware branch.
+This directory contains the MP3 / MP2 audio playback tools and integration components developed for the Xanxi XACP platform on the MNT ZZ9000.
 
-This audio path belongs to the XX16c firmware baseline and remains part of the XACP v1.5 history.
+The XACP audio path uses the ZZ9000 ARM Cortex-A9 to perform MPEG audio decoding while the Amiga side handles file access, application integration and audio playback through AHI.
+
+The current recommended platform baseline is:
+
+```text
+Firmware:  XX19a
+Protocol:  XACP v1.6
+```
+
+The original XACP MP3 streaming architecture was developed and validated during the earlier **XX16c** firmware line. That work established the compressed-data and PCM shared-memory pipeline still used by the current XACP audio services.
 
 ---
 
-## Contents
+## Components
 
-This directory may contain:
+### ZZMP3Play
+
+`ZZMP3Play` is a lightweight command-line MP3 player using the XACP ARM decoding service.
+
+The Amiga streams compressed MPEG audio data to the ZZ9000, where decoding is performed by the ARM. Decoded PCM data is returned through the XACP shared-memory audio path and played through AHI.
+
+Files:
 
 ```text
-ZZPlayGUI          XACP MP3 player / GUI path
-zz9000.engine      AmigaAMP external engine for XACP playback
-mpega.library      XACP-backed mpega.library work
-support files      icons, docs or helper files
+ZZMP3Play
+ZZMP3Play.c
 ```
 
-Exact filenames may vary between releases.
+The source code is included for reference and development.
 
 ---
 
-## Firmware baseline
+### ZZPlayGUI
 
-Primary firmware line:
+`ZZPlayGUI` is the graphical XACP MP3 / MP2 player.
 
-```text
-XX16c
-```
+It provides a native AmigaOS interface while using the same ARM-assisted decoding architecture as the command-line player.
 
-Related protocol baseline:
+Files:
 
 ```text
-XACP V1 / XACP v1.5 history
+ZZPlayGUI
+zzplay-gui.c
 ```
 
-XX16c validated the first practical public XACP audio path:
+The source code is included.
 
-```text
-ARM MP3 decoding
-MP3 streaming pipeline
-MP2 audio support
-AHI playback on the Amiga side
-AmigaAMP external engine path
-mpega.library XACP integration work
-ZZMPEG MPEG-1 / MP2 playback path
-```
+ZZPlayGUI was also an important development platform for the XACP streaming architecture, including buffering, refill scheduling and low-overhead communication with the ZZ9000 ARM.
 
 ---
 
-## ZZPlayGUI
+### mpega.library
 
-ZZPlayGUI is the standalone XACP MP3 playback GUI.
+`mpega.library` provides an XACP-backed implementation of the classic Amiga MPEG audio decoding API.
 
-It uses the ZZ9000 ARM side for decoding and the Amiga side for integration and audio playback.
+It allows compatible Amiga applications to use the ZZ9000 ARM for MPEG audio decoding instead of performing the decoding entirely on the 68k CPU.
 
-Validated path:
+File:
 
 ```text
-MP3 file on Amiga side
-compressed data / stream control through XACP shared DDR
-ARM-side MP3 decoding
-PCM output ring
-AHI playback on AmigaOS
+mpega.library
 ```
+
+The XACP `mpega.library` is an independent implementation written for the XACP project. It does not contain source code from the historical Amiga `mpega.library` implementation.
+
+Additional information is available in:
+
+```text
+README_MPEGA_BETA.md
+LICENSE_MPEGA.txt
+```
+
+Compatibility with legacy applications may vary because some programs depend on implementation-specific behaviour beyond the documented API.
 
 ---
 
-## AmigaAMP external engine
+### AmigaAMP zz9000.engine
 
-The AmigaAMP engine file must be named:
+`zz9000.engine` is an external AmigaAMP decoding engine using the XACP ARM MPEG audio path.
+
+File:
 
 ```text
 zz9000.engine
 ```
 
-This is the recommended AmigaAMP filename for XACP playback.
+The filename must remain `zz9000.engine`, as this is the external-engine name used by AmigaAMP.
 
-The engine allows AmigaAMP to use the ZZ9000 ARM decoding path instead of relying on pure 68k MP3 decoding during playback.
-
-Install it in the AmigaAMP engine directory according to the usual AmigaAMP external-engine installation method.
+The engine allows AmigaAMP to offload MPEG audio decoding to the ZZ9000 ARM while keeping the normal AmigaAMP user interface and playback environment.
 
 ---
 
-## mpega.library
+## Architecture
 
-The XACP-backed `mpega.library` work provides compatibility with software expecting a MPEGA-style decoding interface while using the ZZ9000 ARM side for the expensive audio decode path.
-
-This belongs to the same XX16c audio baseline as ZZPlayGUI and the AmigaAMP engine.
-
-### License and provenance
-
-The XACP `mpega.library` is an independent implementation written from
-scratch for the XACP project. It does not contain code from the historical
-68k mpega.library implementation.
-
-It is distributed as closed-source freeware.
-
-See `LICENSE_MPEGA.txt` for details.
-
----
-
-## Shared-memory areas
-
-The historical MP3 / MP2 audio path uses the XACP stream-control and ring-buffer areas:
+The XACP MPEG audio pipeline follows the general model:
 
 ```text
-fb+0x04002000  MP3 / MP2 StreamControl
-
-fb+0x04100000  MP3 compressed input ring, 512 KB
-fb+0x04200000  MP3 / MP2 PCM output ring, 1 MB
+MP3 / MP2 file on Amiga
+        |
+        v
+compressed MPEG audio data
+        |
+        v
+XACP shared DDR input buffer
+        |
+        v
+ZZ9000 ARM decoding
+        |
+        v
+PCM shared-memory ring
+        |
+        v
+Amiga 68k
+        |
+        v
+AHI audio playback
 ```
 
-All offsets are relative to:
+This architecture substantially reduces the amount of MPEG decoding work performed by the Amiga CPU.
+
+It was one of the first practical demonstrations that the ZZ9000 could be used as a general-purpose application coprocessor rather than only as an RTG graphics card.
+
+The same general XACP principles were subsequently reused for more advanced projects including MIDI synthesis, speech synthesis, video decoding, emulation and Core1 applications.
+
+---
+
+## Firmware compatibility
+
+The current recommended XACP installation is:
 
 ```text
-fb = board + 0x00010000
+BOOT_XX19a.bin
+XACP v1.6
+matching zz9000.card
+```
+
+The MP3 / MP2 service originated in the earlier XX16c firmware line, but the audio path remains available in the current XACP firmware.
+
+Users should therefore normally use the latest public XACP firmware rather than installing an historical XX16c build.
+
+Older firmware and documentation are retained only for:
+
+```text
+historical reference
+development history
+regression testing
+reproduction of older configurations
+```
+
+After replacing the ZZ9000 firmware or `zz9000.card`, fully power off the Amiga before testing.
+
+Do not assume that unrelated ZZ9000 firmware branches implement the XACP MPEG audio interfaces.
+
+---
+
+## Historical XX16c material
+
+The original MP3 streaming implementation was developed during the **XX16c** firmware generation.
+
+Historical documentation describing that development state is retained under:
+
+```text
+archive/XX16c/
+```
+
+This may include:
+
+```text
+MP3_STATUS.md
+ZZMP3Play_README.md
+```
+
+These files describe the development status at that time and should not be interpreted as documentation for the current XX19a / XACP v1.6 baseline.
+
+Older experimental `mpega.library` builds are also retained under the archive directory for historical reference.
+
+---
+
+## Source availability
+
+Source availability differs between the components in this directory.
+
+Currently published source includes:
+
+```text
+ZZMP3Play.c
+zzplay-gui.c
+```
+
+Other components may be distributed as binaries according to their respective licensing and distribution terms.
+
+Source availability for one component does not imply that every XACP audio component is open source.
+
+---
+
+## Third-party components
+
+The ARM-side XACP MP3 decoding service uses **minimp3**.
+
+minimp3 is an independent third-party MPEG audio decoder and retains its original upstream licensing terms.
+
+Third-party source code and license notices remain the property of their respective authors and projects.
+
+---
+
+## Relationship to XACP
+
+The MP3 / MP2 audio path is historically important to XACP.
+
+It established several mechanisms later reused throughout the platform:
+
+```text
+68k-to-ARM streaming
+shared DDR control structures
+compressed-data ring buffers
+ARM-side processing
+PCM output rings
+AHI playback
+flow control and backpressure
+persistent firmware-side services
+```
+
+These experiments helped establish the general XACP model of using the ZZ9000 ARM processors as application coprocessors while retaining AmigaOS for user interface, file access, display, input and audio integration.
+
+---
+
+## Current status
+
+The MP3 / MP2 tools remain part of the XACP application collection.
+
+For normal use:
+
+```text
+use the current XACP firmware
+use the current application binaries
+refer to this README for the current baseline
+refer to archive/ only for historical development information
+```
+
+The current XACP platform baseline is:
+
+```text
+Firmware XX19a
+XACP v1.6
 ```
 
 ---
 
-## Compatibility notes
+## Author
 
-Use matching firmware, `zz9000.card` and application binaries from the same release line when possible.
+XACP integration, application development and real-hardware validation:
 
-Do not mix unrelated firmware and application builds unless the combination has been tested.
+**Xanxi**
 
-After replacing firmware or `zz9000.card`, fully power off the Amiga before testing.
+2026
 
----
+ZZ9000 is a product of MNT Research GmbH.
 
-## Relation to XACP v1.5
-
-The MP3 / MP2 audio path predates XACP v1.5, but remains part of the validated XACP application line.
-
-XACP v1.5 does not remove the XX16c audio model. It documents and extends the shared-memory layout used by later services such as ZZMIDI.
+XACP and the applications in this directory are independent software projects and are not official MNT Research products.
