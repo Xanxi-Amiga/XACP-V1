@@ -279,6 +279,7 @@ Each application or source package should therefore be considered according to t
 The corresponding XX19a firmware source is available under:
 
 firmware/source/XX19a/
+
 ---
 
 ## Development
