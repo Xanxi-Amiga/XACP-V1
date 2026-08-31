@@ -276,8 +276,9 @@ Application source availability is independent from firmware source availability
 
 Each application or source package should therefore be considered according to the license information distributed with that specific component.
 
-The XX19a firmware source package is being prepared for publication in this repository.
+The corresponding XX19a firmware source is available under:
 
+firmware/source/XX19a/
 ---
 
 ## Development
