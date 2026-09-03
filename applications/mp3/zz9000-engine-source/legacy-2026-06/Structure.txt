@@ -1,0 +1,38 @@
+
+
+AmigaOS
+-------                                    +-------------------+
+                       iEngine     iEngine |                   |
+Funcs ---> EngineAccess --(-----------O------ iEngine_AmigaOS ----+-> equalizer
+                                           |                   |  |
+                                           |                   |  +-> fifo
+                                           |                   |  |
+                                           |                   |  +-> amp
+==========================================================================
+                                           |                   |
+                                           |                   |
+                                           |                   |
+WarpOS                                     |                   |
+------                                     |                   |
+                       iEngine     iEngine |                   |
+Funcs ---> EngineAccess --(-----------O----+- iEngine_WarpOS   |
+==========================================================================
+                                           |          WosMain ----+-> equalizer
+                                           |                   |  |
+                                           |                   |  +-> fifo
+                                           |                   |  |
+                                           |                   |  +-> amp
+                                           |                   |
+ZZ9000                                     |                   |
+------                                     |                   |
+                       iEngine     iEngine |                   |
+Funcs ---> EngineAccess --(-----------O----+- iEngine_ZZ9000   |
+==========================================================================
+                                           |ZZ9kEngineHandler ----+-> equalizer
+                                           |                   |  |
+                                           |                   |  +-> fifo
+                                           |                   |  |
+                                           |                   |  +-> amp
+                                           +-------------------+
+                                            application specific
+

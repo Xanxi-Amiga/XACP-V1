@@ -1,0 +1,73 @@
+## ===========================================================================
+## makefile-xacp -- AmigaAMP3 external engine, XACP / ZZ9000 backend
+##
+## Derived from Tom Wenzel's makefile-os3. Changes vs os3:
+##   1. iEngine_AmigaOS.o  ->  iEngine_ZZ9000.o   (XACP backend)
+##   2. output + LIBNAME use the CANONICAL name AmigaAMP expects: zz9000.engine
+##      (replaces Tom's non-functional zz9000.engine stub in Plugins/).
+##      AmigaAMP appears to recognise the ZZ9000 engine by this exact filename,
+##      so a custom name (e.g. zz9000-xacp.engine) may not be accepted.
+##
+## Do NOT use makefile-zz9000: that one links an embedded ARM blob
+## (arm-zz9000os.executable.bin) which conflicts with the already-flashed
+## XX16 firmware. This engine talks to the existing firmware via XACP, so
+## no ARM blob is embedded or uploaded.
+##
+## The local 68k decoder (fifo/ equalizer/ amp/*) is kept in the link but is
+## DEAD CODE: iEngine_ZZ9000 never calls fifo_*/amp_*/equalizer_* (all decoding
+## happens on the ARM). Keeping it guarantees the link resolves on the first
+## try regardless of any hidden reference in Funcs.c / EngineAccess.c.
+## Once the link is proven, switch to the LEAN OBJS line to slim the binary.
+##
+## On a non-Windows toolchain (e.g. /opt/amiga/bin on Linux), drop the .exe
+## suffixes from CC / LINK / STRIP below.
+## ===========================================================================
+
+CC      = m68k-amigaos-gcc.exe
+RM      = rm -f
+LINK    = m68k-amigaos-gcc.exe
+STRIP   = m68k-amigaos-strip.exe
+
+CPU     = -m68020 -m68881
+#CPU     = -m68060
+CFLAGS	= -g -O3 $(CPU) -I. -IInclude -fstrength-reduce -fomit-frame-pointer -fno-aggressive-loop-optimizations -c -DHAVE_CONFIG_H -DBYTE_ORDER_IS_BIG_ENDIAN -DLIBNAME=\"zz9000.engine\"
+LDFLAGS	= -g $(CPU) -nostartfiles -s --verbose
+LDLIBS	= -lm -ldebug
+
+## --- backend swapped here: iEngine_AmigaOS.o -> iEngine_ZZ9000.o ---
+OBJS    = StartUp.o LibInit.o Funcs.o EngineAccess.o iEngine_ZZ9000.o MyStdlib.o
+OBJS   += fifo/fifo.o equalizer/equalizer.o amp/amp.o amp/audio.o amp/layer2.o amp/layer3.o amp/getbits.o amp/getdata.o amp/transform.o amp/misc2.o amp/huffman.o amp/fft_new.o
+
+## --- LEAN build (optional, once the link above is proven): XACP needs no
+## --- local decoder. Comment the two OBJS lines above and use this one:
+#OBJS    = StartUp.o LibInit.o Funcs.o EngineAccess.o iEngine_ZZ9000.o MyStdlib.o
+
+BIN_DBG = zz9000.engine.debug
+BIN     = zz9000.engine
+
+.PHONY: all clean mrproper
+all: $(BIN_DBG)
+
+clean:
+	$(RM) $(OBJS)
+
+mrproper:
+	$(RM) $(OBJS) $(BIN_DBG) $(BIN)
+
+
+$(BIN_DBG): $(OBJS)
+	$(LINK) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
+	$(STRIP) -s -o $(BIN) $(BIN_DBG)
+
+
+%.o: %.c
+	$(CC) -c $< $(CFLAGS) -o $@
+
+StartUp.o: StartUp.c
+	$(CC) $(CFLAGS) -fno-force-addr StartUp.c
+
+LibInit.o: LibInit.c
+	$(CC) $(CFLAGS) -Wno-pointer-to-int-cast LibInit.c
+
+Funcs.o: Funcs.c
+	$(CC) $(CFLAGS) Funcs.c

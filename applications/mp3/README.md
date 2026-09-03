@@ -82,15 +82,42 @@ Compatibility with legacy applications may vary because some programs depend on 
 
 `zz9000.engine` is an external AmigaAMP decoding engine using the XACP ARM MPEG audio path.
 
-File:
+The original AmigaAMP EngineLibrary framework and ZZ9000 backend stub were developed by **Thomas Wenzel**, author of AmigaAMP. The ZZ9000/XACP backend implementation and integration were developed by **Xanxi**.
+
+Thomas Wenzel and Xanxi agreed to distribute the EngineLibrary/XACP work under the **GNU Lesser General Public License v2.1 or later** (`LGPL-2.1-or-later`).
+
+The source is published under:
+
+```text
+zz9000-engine-source/
+```
+
+Two source trees are retained deliberately:
+
+```text
+current/          Clean XACP-only build; does not link the unused local software decoder
+legacy-2026-06/   Source corresponding to the historical June 2026 development build
+```
+
+The historical June 2026 binary was built from the original development tree and linked additional legacy `amp`, `equalizer` and `fifo` objects even though XACP performs MPEG decoding on the ZZ9000 ARM. Those additional sources retain their own original notices and licensing terms. The historical binary and releases are therefore preserved as historical artifacts and are **not described as LGPL-only**.
+
+Future `zz9000.engine` builds should use the clean `current/` source tree.
+
+The filename must remain:
 
 ```text
 zz9000.engine
 ```
 
-The filename must remain `zz9000.engine`, as this is the external-engine name used by AmigaAMP.
+because this is the external-engine name used by AmigaAMP.
 
-The engine allows AmigaAMP to offload MPEG audio decoding to the ZZ9000 ARM while keeping the normal AmigaAMP user interface and playback environment.
+See:
+
+```text
+LICENSE_ZZ9000_ENGINE.txt
+NOTICE_ZZ9000_ENGINE.md
+zz9000-engine-source/README.md
+```
 
 ---
 
@@ -142,14 +169,7 @@ The MP3 / MP2 service originated in the earlier XX16c firmware line, but the aud
 
 Users should therefore normally use the latest public XACP firmware rather than installing an historical XX16c build.
 
-Older firmware and documentation are retained only for:
-
-```text
-historical reference
-development history
-regression testing
-reproduction of older configurations
-```
+Older firmware and documentation are retained only for historical reference, development history, regression testing and reproduction of older configurations.
 
 After replacing the ZZ9000 firmware or `zz9000.card`, fully power off the Amiga before testing.
 
@@ -167,79 +187,45 @@ Historical documentation describing that development state is retained under:
 archive/XX16c/
 ```
 
-This may include:
-
-```text
-MP3_STATUS.md
-ZZMP3Play_README.md
-```
-
-These files describe the development status at that time and should not be interpreted as documentation for the current XX19a / XACP v1.6 baseline.
-
-Older experimental `mpega.library` builds are also retained under the archive directory for historical reference.
+These files describe the development status at that time and should not be interpreted as documentation for the current XX19a / XACP v1.6 baseline. Older experimental `mpega.library` builds are also retained under the archive directory for historical reference.
 
 ---
 
 ## Source availability
-
-Source availability differs between the components in this directory.
 
 Currently published source includes:
 
 ```text
 ZZMP3Play.c
 zzplay-gui.c
+zz9000-engine-source/
 ```
 
-Other components may be distributed as binaries according to their respective licensing and distribution terms.
+The AmigaAMP `zz9000.engine` source is licensed under `LGPL-2.1-or-later`.
 
-Source availability for one component does not imply that every XACP audio component is open source.
+The current XACP `mpega.library` remains closed-source freeware under its own license. Source availability for one component does not imply that every XACP audio component is open source.
 
 ---
 
 ## Third-party components
 
-The ARM-side XACP MP3 decoding service uses **minimp3**.
+The ARM-side XACP MP3 decoding service uses **minimp3**, which retains its original upstream licensing terms.
 
-minimp3 is an independent third-party MPEG audio decoder and retains its original upstream licensing terms.
+The AmigaAMP external engine framework was developed by **Thomas Wenzel**. The source package also preserves attribution for the CLib37x-derived Amiga shared-library startup code. See `NOTICE_ZZ9000_ENGINE.md` and `zz9000-engine-source/THIRD_PARTY_NOTICES.md`.
 
-Third-party source code and license notices remain the property of their respective authors and projects.
+Third-party copyrights and license notices remain the property of their respective authors and projects.
 
 ---
 
 ## Relationship to XACP
 
-The MP3 / MP2 audio path is historically important to XACP.
-
-It established several mechanisms later reused throughout the platform:
-
-```text
-68k-to-ARM streaming
-shared DDR control structures
-compressed-data ring buffers
-ARM-side processing
-PCM output rings
-AHI playback
-flow control and backpressure
-persistent firmware-side services
-```
-
-These experiments helped establish the general XACP model of using the ZZ9000 ARM processors as application coprocessors while retaining AmigaOS for user interface, file access, display, input and audio integration.
+The MP3 / MP2 audio path is historically important to XACP. It established mechanisms later reused throughout the platform, including 68k-to-ARM streaming, shared DDR control structures, compressed-data ring buffers, ARM-side processing, PCM output rings, AHI playback, flow control and persistent firmware-side services.
 
 ---
 
 ## Current status
 
-The MP3 / MP2 tools remain part of the XACP application collection.
-
-For normal use:
-
-```text
-use the current XACP firmware
-use the current application binaries
-refer to this README for the current baseline
-refer to archive/ only for historical development information
-```
+The MP3 / MP2 tools remain part of the XACP application collection. For normal use, use the current XACP firmware and current application binaries; refer to `archive/` only for historical development information.
 
 The current XACP platform baseline is:
 

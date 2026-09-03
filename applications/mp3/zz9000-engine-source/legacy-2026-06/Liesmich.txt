@@ -1,0 +1,58 @@
+
+Aufbau
+------
+Siehe auch Structure.txt
+
+Basis auf der 68k Seite ist eine Shared Library mit einem Minimum an Funktionen.
+Die Library greift über ein standardisiertes Interface (definiert in iEngine.h) 
+auf ein Modul zu, welches die Funktionsaufrufe an die Coprozessor Seite 
+weiterleitet.
+Pro Variante muss also ein Interface iEngine_xxx.c implementiert werden.
+
+Basis auf der Coprozessor Seite ist ein Handler, der die Funktionsaufrufe der 
+68k Seite übermittelt bekommt und seinerseits ggfs. an Funktionen in fifo.c, 
+amp.c oder zukünftige weitere Dekoder weiterleitet.
+
+Der Datenaustausch geschieht hierbei vorzugsweise über geteilten Speicher 
+(shared memory).
+
+Der geteilte Speicher kann wahlweise vom Dekoder oder von der Applikation zur 
+Verfügung gestellt werden. Stellt der Dekoder den geteilten Speicher zur 
+Verfügung, hat dieser Priorität und muss von der Applikation genutzt werden.
+
+Wenn der Coprozessor den geteilten Speicher zur Verfügung stellt, ist die 
+Applikation dafür verantwortlich, den Codeblock {Equalizer setzen, Dekoder 
+aufrufen, zurückgelieferte Daten verarbeiten} in ein Engine_obtain() /
+Engine_release()-Paar einzuschließen.
+
+Kann der Coprozessor seinen Speicher nicht mit der 68k Seite teilen, müssen in 
+der Interface Implementation Routinen eingebaut werden, die den Speicherinhalt 
+auf anderem Weg (z.B. Registerzugriffe) zwischen 68k- und Coprozessor-Seite hin 
+und her transferieren.
+
+
+Arbeitsweise
+------------
+Ein Dekoder für komprimiertes Audio arbeitet normalerweise mit einer variablen 
+Eingangs- und einer festen Ausgangs-Bitrate.
+
+Der Funktionsaufruf liefert also in der Regel eine vorhersagbare Länge an 
+Output, benötigt dafür aber eine nur bedingt (in gewissen Grenzen) 
+vorhersagbare Länge an Input.
+
+Wenn der Dekoder jetzt von Speicher zu Speicher dekodiert, benötigen wir für 
+den Input einen FIFO. Dieser FIFO muss vor dem Dekodier-Aufruf mit genügend 
+Daten gefüllt werden und enthält am Ende des Dekodier-Aufrufes einen Rest 
+(noch) nicht verarbeiteter Daten.
+
+Um ggfs. mehrere Streams parallel dekodieren zu können, wird pro Dekoder 
+Instanz ein FIFO benötigt.
+
+Beispiele
+---------
+ * m68k-amigaos.engine
+   Alles in einer Shared Library, fifo und amp können direkt aufgerufen werden.
+
+ * ppc-warpos.engine
+   68k Seite in einer Shared Library, welche die Operationen per AmigaOS 
+   Messaging an einen laufenen WarpOS Task übergibt

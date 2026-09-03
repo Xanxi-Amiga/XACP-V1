@@ -1,0 +1,10 @@
+** $VER: engine.fd 1.0 (24.09.21)
+##base _EngineBase
+##bias 30
+##public
+Engine_getName()()
+Engine_getCapability(Capability)(D1)
+Engine_obtain()()
+Engine_release()()
+Engine_doOperation(Operation,Data)(D1/A1)
+##end

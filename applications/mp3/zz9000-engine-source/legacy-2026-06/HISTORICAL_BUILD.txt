@@ -1,0 +1,13 @@
+Historical June 2026 XACP AmigaAMP engine
+=========================================
+
+Binary:   zz9000.engine
+Size:     99660 bytes
+MD5:      265d0bb4b49b114e3504c24b94ded271
+SHA-256:  8e44ef257933a214d34b7b255a0584d0acaef6bdec1a8ec7724bff6416d14334
+
+This source tree corresponds to the historical development build. The original
+makefile-xacp is preserved unchanged. Object files and compiled binaries are not
+included in this source directory.
+
+For new builds use ../current/ instead.
