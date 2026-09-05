@@ -1,0 +1,13 @@
+# PicoDrive upstream source reference
+
+ZZPicoDriveMD 1.1 was built against:
+
+PicoDrive repository: https://github.com/notaz/picodrive
+PicoDrive commit: 26ecb2b6358fefba24e3d68b9eb2efba7f10d5ee
+
+Cyclone 68000 repository: https://github.com/irixxxx/cyclone68000
+Cyclone commit: 3ac7cf1bdeecb60e2414980e8dc72ff092f69769
+
+The PicoDrive COPYING file applicable to this revision is included at the ZZPicoDriveMD root.
+
+NOTE: this package contains the complete ZZ9000/XACP port sources and the exact ARM blob source/build environment supplied for ZZPicoDriveMD 1.1. The upstream PicoDrive and Cyclone trees are referenced above but are not physically vendored in this archive.

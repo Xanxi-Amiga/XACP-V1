@@ -2,14 +2,26 @@
 
 ZZPicoDriveMD is distributed without any commercial ROM image.
 
-The PicoDrive emulation core is by notaz and contributors.
+The emulation core is **PicoDrive by notaz and contributors**.
 
-The ZZ9000 / Amiga port, launcher, ARM integration, audio/video/input/save
-handling are by Xanxi.
+ZZ9000 / AmigaOS port, launcher, ARM Core1 integration,
+audio/video/input/save handling and XACP integration are by **Xanxi**.
 
-The source code for the ZZ9000 / Amiga port will be made available after
-cleanup.
+The complete corresponding source for ZZPicoDriveMD 1.1 is published under:
 
-Please include the original PicoDrive license / copying files with binary
-releases. If your build includes additional third-party components, include
-their license texts as well.
+```text
+source/
+```
+
+The release is based on PicoDrive commit:
+
+```text
+26ecb2b6358fefba24e3d68b9eb2efba7f10d5ee
+```
+
+PicoDrive at this revision uses its historical non-commercial license. Modified
+redistributions must include the complete source code for the components used by
+the binary.
+
+See `COPYING_PICODRIVE.txt`, `THIRD_PARTY_NOTICES.md` and the original license
+files in `source/third_party/picodrive/`.
