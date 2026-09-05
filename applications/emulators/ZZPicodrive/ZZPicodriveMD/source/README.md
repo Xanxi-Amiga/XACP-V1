@@ -34,7 +34,7 @@ source retained in the original build archive.
 
 The historical source files are intentionally preserved rather than rewritten.
 Some comments therefore mention earlier internal development-stage names even
-though the current public firmware baseline is XX19a / XACP v1.6.
+though the current public firmware baseline is **XX19a / XACP v1.6**.
 
 ## Upstream PicoDrive revision
 
@@ -45,42 +45,76 @@ notaz/picodrive
 commit 26ecb2b6358fefba24e3d68b9eb2efba7f10d5ee
 ```
 
-The Cyclone submodule used by this revision is:
+The Cyclone source used by this PicoDrive revision is:
 
 ```text
 irixxxx/cyclone68000
 commit 3ac7cf1bdeecb60e2414980e8dc72ff092f69769
 ```
 
-Before committing this package to GitHub, run:
-
-```powershell
-.\FETCH_UPSTREAM.ps1
-```
-
-The script clones the exact PicoDrive revision, initializes only the Cyclone
-submodule required by the MD build, verifies both revisions and removes nested
-Git metadata so the source is committed normally inside the XACP repository.
-
-After the script completes, this must exist:
+The exact upstream source archives are already included in:
 
 ```text
-third_party/picodrive/COPYING
-third_party/picodrive/AUTHORS
-third_party/picodrive/pico/
-third_party/picodrive/cpu/cyclone/
+third_party/archives/
 ```
 
-Do **not** commit the package before this step has completed successfully.
+No repository checkout or network fetch is required to obtain the corresponding
+third-party source.
+
+The `.url` files in `third_party/` are optional upstream references only.
+
+## Historical ARM build layout
+
+The retained build script uses the original Unix-style `/tmp/zp` layout and the
+`arm-none-eabi-` GNU toolchain.
+
+For that layout:
+
+1. Put the files from `arm/` directly in `/tmp/zp/`.
+2. Extract the included PicoDrive archive so its source root is
+   `/tmp/zp/picodrive/`.
+3. Extract the included Cyclone archive into
+   `/tmp/zp/picodrive/cpu/cyclone/`, so that directory contains the Cyclone
+   `Makefile`, `Main.cpp`, `Ea.cpp`, `Cyclone.h` and the other generator
+   sources.
+4. Run `arm/build_cyc_audioreal.sh` in a shell environment with the ARM GNU
+   toolchain, `make` and a native C++ compiler available.
+
+Normal archive extraction tools are sufficient for steps 1-3.
+
+## Cyclone.s
+
+At Cyclone commit `3ac7cf1bdeecb60e2414980e8dc72ff092f69769`,
+`Cyclone.s` is intentionally **not stored in the repository**.
+
+The upstream Cyclone Makefile defines:
+
+```text
+all: Cyclone.s
+Cyclone.s: cyclone_gen
+    ./cyclone_gen
+```
+
+`cyclone_gen` is built from the Cyclone C/C++ generator sources and then run on
+the build host to emit `Cyclone.s`.
+
+The retained ZZPicoDrive ARM build script checks for `Cyclone.s` and invokes the
+upstream Cyclone Makefile with PicoDrive's `cpu/cyclone_config.h` configuration
+to generate it when necessary before assembling it with `arm-none-eabi-gcc`.
 
 ## ARM build
 
-The historical build script uses the original `/tmp/zp` layout and the
-`arm-none-eabi-` GNU toolchain. Its compiler flags and exact object list are
-retained in `arm/build_cyc_audioreal.sh`.
+The historical build script retains the original compiler flags and exact object
+list used for the MD build.
 
-For the historical layout, the build directory contained the files from `arm/`
-and the PicoDrive tree as `/tmp/zp/picodrive`.
+The released reference blob is provided in:
+
+```text
+arm/zzpicodrive_md_v1.1.bin
+```
+
+Its SHA-256 is the release identity shown above. Reproducing the exact binary
+also depends on using a compatible toolchain/build environment.
 
 ## 68k launcher build
 
@@ -94,10 +128,6 @@ m68k-amigaos-gcc -O2 -noixemul -m68020 -Wno-pointer-sign \
 The normal AmigaOS NDK, Picasso96 and AHI headers used by the source are also
 required.
 
-## Verification
-
-Run `VERIFY_SOURCE.ps1` to verify the retained MD release files before commit.
-
 ## Licensing
 
 PicoDrive at the revision used here is not GPL-only. Its historical
@@ -109,7 +139,7 @@ See:
 ```text
 ../COPYING_PICODRIVE.txt
 ../THIRD_PARTY_NOTICES.md
-third_party/picodrive/COPYING
+third_party/archives/
 ```
 
 Original third-party copyright and license notices must be preserved.

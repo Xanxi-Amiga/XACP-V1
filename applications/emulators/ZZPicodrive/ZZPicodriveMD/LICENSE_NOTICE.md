@@ -1,55 +1,38 @@
 # License / source notice
 
-ZZPicoDriveMD is a Sega Mega Drive / Genesis emulator for the MNT ZZ9000.
+ZZPicoDriveMD is distributed without any commercial ROM image.
 
-No Sega / Mega Drive / Genesis ROM images are included.
+The emulation core is **PicoDrive by notaz and contributors**.
 
-## PicoDrive
+ZZ9000 / AmigaOS port, launcher, ARM Core1 integration,
+audio/video/input/save handling and XACP integration are by **Xanxi**.
 
-The PicoDrive emulation core is by **notaz and contributors**.
+The corresponding source for ZZPicoDriveMD 1.1 is published under:
 
-The PicoDrive revision used as the base for ZZPicoDriveMD 1.1 is:
+```text
+source/
+```
+
+The release is based on PicoDrive commit:
 
 ```text
 26ecb2b6358fefba24e3d68b9eb2efba7f10d5ee
 ```
 
-The original PicoDrive licensing terms are reproduced in the source distribution.
+PicoDrive at this revision uses its historical non-commercial license. Modified
+redistributions must include the complete source code for the components used by
+the binary.
 
-See:
-
-```text
-source/third_party/picodrive/COPYING
-```
-
-or the corresponding included PicoDrive license file.
-
-## Cyclone 68000
-
-The Cyclone 68000 component used by this build is based on:
+The exact PicoDrive and Cyclone source archives used for this publication are
+included under:
 
 ```text
-3ac7cf1bdeecb60e2414980e8dc72ff092f69769
+source/third_party/archives/
 ```
 
-Cyclone retains its original copyright and licensing terms. Its original license files are included with the corresponding source.
+The PicoDrive license text is reproduced at `COPYING_PICODRIVE.txt`; the
+original upstream files, including PicoDrive `COPYING` / `AUTHORS` and the
+Cyclone license files, are preserved inside the corresponding upstream source
+archives.
 
-## ZZ9000 / Amiga port
-
-The ZZ9000 / Amiga port, launcher, ARM integration, audio/video/input handling, SRAM and savestate integration were developed by:
-
-**Xanxi**
-
-The corresponding source code for the released **ZZPicoDriveMD 1.1** is provided in the `source/` directory.
-
-The combined source distribution retains the original licensing terms and copyright notices of PicoDrive and all other third-party components.
-
-## Source availability
-
-The source tree supplied with ZZPicoDriveMD 1.1 contains the source corresponding to the released Amiga/ZZ9000 port, together with the PicoDrive components used to build the ARM emulation core.
-
-Original third-party copyright notices and license texts must be preserved when redistributing source or binaries.
-
-ZZ9000 is a product of MNT Research GmbH.
-
-ZZPicoDriveMD is an independent project and is not an official MNT Research product.
+See `THIRD_PARTY_NOTICES.md` and `source/third_party/README.md`.

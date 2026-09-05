@@ -46,6 +46,33 @@ $CC $CPU -D_ASM_DRAW_C -I$PICO/pico -c $PICO/pico/draw_arm.S  -o draw_arm.o
 $CC $CPU -D_ASM_DRAW_C -I$PICO/pico -c $PICO/pico/draw2_arm.S -o draw2_arm.o
 
 # --- CYCLONE ---
+# Cyclone.s is a generated source file. The upstream repository does not store
+# it at the revision used by ZZPicoDriveMD 1.1. Build the host-side generator
+# and emit Cyclone.s when the file is absent.
+if [ ! -s "$PICO/cpu/cyclone/Cyclone.s" ]; then
+  test -f "$PICO/cpu/cyclone/Makefile" || {
+    echo "ERREUR: sources Cyclone absentes de $PICO/cpu/cyclone"
+    exit 1
+  }
+  command -v make >/dev/null 2>&1 || {
+    echo "ERREUR: make requis pour generer Cyclone.s"
+    exit 1
+  }
+  test -f "$PICO/cpu/cyclone_config.h" || {
+    echo "ERREUR: configuration PicoDrive Cyclone absente: $PICO/cpu/cyclone_config.h"
+    exit 1
+  }
+  echo "Generation de Cyclone.s depuis les sources Cyclone..."
+  make -C "$PICO/cpu/cyclone" \
+    CXX="${HOST_CXX:-g++}" \
+    CONFIG_FILE=../cyclone_config.h \
+    Cyclone.s
+fi
+test -s "$PICO/cpu/cyclone/Cyclone.s" || {
+  echo "ERREUR: Cyclone.s non genere"
+  exit 1
+}
+
 $CC $CPU -c $PICO/cpu/cyclone/Cyclone.s -o Cyclone.o
 $CC $CPU -c $PICO/pico/m68kif_cyclone.s -o m68kif_cyclone.o
 $CC $CPU -c $PICO/cpu/cyclone/tools/idle.s -o idle.o

@@ -8,6 +8,16 @@ PicoDrive commit: 26ecb2b6358fefba24e3d68b9eb2efba7f10d5ee
 Cyclone 68000 repository: https://github.com/irixxxx/cyclone68000
 Cyclone commit: 3ac7cf1bdeecb60e2414980e8dc72ff092f69769
 
-The PicoDrive COPYING file applicable to this revision is included at the ZZPicoDriveMD root.
+The exact upstream source archives for both revisions are physically included in:
 
-NOTE: this package contains the complete ZZ9000/XACP port sources and the exact ARM blob source/build environment supplied for ZZPicoDriveMD 1.1. The upstream PicoDrive and Cyclone trees are referenced above but are not physically vendored in this archive.
+source/third_party/archives/
+
+PicoDrive's original COPYING and AUTHORS files are preserved inside the
+PicoDrive archive. Cyclone's original license files and generator sources are
+preserved inside the Cyclone archive.
+
+Cyclone.s is generated from the Cyclone generator sources by the upstream
+Makefile and is not stored in the Cyclone repository at this revision.
+
+The root COPYING_PICODRIVE.txt is a convenient copy of the PicoDrive license
+text applicable to this release.
