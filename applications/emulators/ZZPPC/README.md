@@ -9,7 +9,7 @@ On 6 September 2026, ZZPPC reached its first hardware proof of concept: the orig
 Test configuration:
 
 - Amiga 4000
-- Phase 5 Cyberstorm MK2 with Motorola 68060 at 50 MHz
+- Phase 5 Cyberstorm MK II with Motorola 68060 at 50 MHz
 - MNT ZZ9000
 - XACP firmware
 - no BlizzardPPC or CyberStormPPC
@@ -22,12 +22,12 @@ The ZZPPC interpreter executes the required big-endian PPC32 integer and floatin
 
 ## First results
 
-During the initial 320x240 test:
+During the demonstrated test:
 
 - ZZPPC interpreted PPC/FPU calculation: approximately 33 seconds
 - native 68060/50 FPU calculation: approximately 8 seconds
 - one completed PPC run reported approximately 117 million interpreted instructions
-- FlashMandel reported approximately 14,455 pixels per second for the PPC path
+
 
 These are preliminary measurements from a deliberately simple interpreter. They are not estimates of final ZZPPC performance and must not be interpreted as an equivalence with a particular PowerPC processor.
 
