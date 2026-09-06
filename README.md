@@ -188,9 +188,10 @@ On 6 September 2026, the original and unmodified FlashMandelWOS application rend
 ZZPPC remains an application-specific research prototype. It is not yet a complete PowerPC emulator or WarpOS implementation.
 
 See:
+
 ```text
 applications/emulators/ZZPPC/
-
+```
 ---
 
 ## ZZDoom
