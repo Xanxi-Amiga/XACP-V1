@@ -47,6 +47,7 @@ This model is used for workloads such as:
 ```text
 ZZDoom
 ZZPicoDrive
+ZZPPC
 Julia / fractal rendering
 video decoding
 benchmarks
@@ -119,6 +120,7 @@ Current and historical projects in this repository include:
 | ----------------------------- | ------------------------------------------------------------ |
 | **ZZMIDI**                    | SoundFont MIDI synthesis on the ZZ9000 ARM with AHI playback |
 | **ZZPicoDrive**               | Mega Drive / Genesis emulation using ZZ9000 Core1            |
+| **ZZPPC**                     | Experimental PPC32/FPU execution on ZZ9000 Core1             |
 | **ZZDoom**                    | Doom engine running on ZZ9000 Core1                          |
 | **ZZRastan**                  | Rastan arcade engine running on ZZ9000 Core1 |
 | **ZZSpeech**                  | Speech synthesis accelerated by the ZZ9000                   |
@@ -174,6 +176,21 @@ See:
 ```text
 applications/emulators/ZZPicodrive/
 ```
+
+---
+
+## ZZPPC
+
+ZZPPC is an experimental PowerPC execution proof of concept for the ZZ9000.
+
+On 6 September 2026, the original and unmodified FlashMandelWOS application rendered a Mandelbrot fractal on an Amiga 4000/060 equipped with a ZZ9000 and no physical PowerPC accelerator. Its original PPC32/FPU workload was interpreted by a custom engine running on the ARM Cortex-A9 Core1 and communicating with the Amiga through XACP.
+
+ZZPPC remains an application-specific research prototype. It is not yet a complete PowerPC emulator or WarpOS implementation.
+
+See:
+
+```text
+applications/emulators/ZZPPC/
 
 ---
 
