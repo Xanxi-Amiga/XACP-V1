@@ -1,6 +1,6 @@
 # ZZPicoDriveSMS
 
-**ZZPicoDriveSMS** is a Sega Master System emulator for Amiga classic systems
+**ZZPicoDriveSMS** is a Sega Master System emulator for classic Amiga systems
 equipped with an **MNT ZZ9000**.
 
 The Amiga 68k side handles the launcher, file access, RTG display, input,
@@ -30,30 +30,23 @@ This is the **Master System Edition** of ZZPicoDrive.
 ## Requirements
 
 - Amiga with MNT ZZ9000.
-- Firmware XX19 from Xanxi's branch, or later XX firmware, or any firmware
-  explicitly compatible with ZZPicoDriveSMS.
+- **XACP v1.6 / firmware XX19a**, or a later firmware explicitly documented
+  as providing the required ZZPicoDrive/XACP interface.
 - Matching `zz9000.card` file.
 - Picasso96 RTG setup.
 - Picasso96 mode supporting 320x240 in 32-bit colour.
 - AHI installed if using the AHI audio backend.
 
-ZZPicoDriveSMS is not compatible with MNT firmwares 1.0 to 1.13.  
-ZZPicoDriveSMS is not compatible with MiDWaN / BlitterStudio firmwares.
+Current XACP firmware release:
 
-This is not a criticism of other ZZ9000 firmware branches. ZZPicoDriveSMS uses
-specific low-level Core1, DDR memory mapping and RTG/PAN mechanisms required
-by this application. Other firmware branches may work only if they explicitly
-provide a compatible interface.
+https://github.com/Xanxi-Amiga/XACP-ZZ9000/releases/tag/XX19a
 
-The firmware is not included in this repository or in the emulator archive.
+ZZPicoDriveSMS is not compatible with official MNT firmware 1.13 or with
+MiDWaN / BlitterStudio firmware unless a future version explicitly provides
+compatible XACP interfaces.
 
-Download the XX19 firmware and matching `zz9000.card` from:
-
-https://github.com/Xanxi-Amiga/XACP-V1/releases/tag/XX19_firmware
-
-Do not mix `BOOT.BIN`, `zz9000.card` and ZZPicoDriveSMS executables from
-different packages. A mismatched firmware/card/executable set may boot but
-fail at runtime.
+Do not mix `BOOT.bin`, `zz9000.card` and ZZPicoDrive executables from unrelated
+firmware generations.
 
 ## ROM format
 
@@ -66,34 +59,29 @@ Not supported:
 
 - `.zip`
 
-Please decompress `.zip` archives before use.
+No Sega Master System ROM images are included.
 
-No Sega Master System ROMs are included.
-
-Only use ROM files you legally own.
+Only use ROM files you are legally entitled to use.
 
 ## Audio
 
 ZZPicoDriveSMS produces 16-bit stereo PCM audio at 22050 Hz.
 
-The Sega Master System PSG audio emulation runs on the ZZ9000 ARM side.
-The ARM writes the stereo PCM stream into shared memory, and the 68k side
-plays it back.
+The Master System PSG audio emulation runs on the ZZ9000 ARM side. The ARM
+writes the stereo PCM stream into shared memory and the 68k side plays it back.
 
-**YM2413 / FM audio is not enabled in this release.** Games with optional FM
-sound should still run, but this release uses the standard PSG audio path.
+**YM2413 / FM audio is not enabled in version 1.1.** Games with optional FM
+sound use the standard PSG path in this release.
 
 Audio modes:
 
 ### AHI
 
-16-bit stereo output through AHI. This works with any AHI-supported audio
-hardware, including Paula, sound cards and Prisma. AHI must be installed.
+16-bit stereo output through AHI.
 
 ### Paula DMA
 
-Direct playback through Paula channels AUD0/AUD1, bypassing AHI. This backend
-does not require AHI and provides direct Paula output.
+Direct playback through Paula channels AUD0/AUD1, bypassing AHI.
 
 ### None
 
@@ -101,7 +89,9 @@ Audio disabled.
 
 ## Controls
 
-ZZPicoDriveSMS supports several input methods selectable from the launcher.
+ZZPicoDriveSMS supports keyboard, DB9 joystick and CD32/USB controllers through
+`lowlevel.library`, including two-player operation when suitable input sources
+are selected.
 
 ### Keyboard
 
@@ -111,21 +101,6 @@ ZZPicoDriveSMS supports several input methods selectable from the launcher.
 | Numeric keypad 1 | Button 1 |
 | Numeric keypad 2 | Button 2 |
 | Return | Start / Pause when supported |
-
-### DB9 joystick
-
-Standard Amiga joystick ports can be used through the DB9 input mode.
-Direction and fire buttons are mapped to the Master System pad.
-
-### CD32 / USB controllers through lowlevel.library
-
-CD32-style pads and compatible USB controllers can be used through
-`lowlevel.library` when supported by your Amiga setup.
-
-### Two-player support
-
-Two-player support is available when suitable input sources are selected for
-player 1 and player 2.
 
 ## Hotkeys
 
@@ -139,36 +114,35 @@ player 1 and player 2.
 
 See [INSTALL.md](INSTALL.md).
 
-## Troubleshooting
+## Source code
 
-If the emulator does not open the display, check that your ZZ9000 Picasso96
-configuration has a valid 320x240x32 RTG mode.
+The corresponding source for **ZZPicoDriveSMS 1.1** is published in
+[`source/`](source/).
 
-A High Colour Workbench screen is not enough. ZZPicoDriveSMS needs a real
-32-bit / True Colour ZZ9000 RTG mode.
+It contains the final Amiga 68k launcher source, the exact embedded ARM blob,
+the final ARM Core1 source and the retained SMS build files.
 
-If you get a black screen, OpenScreen failed, or immediate return to Workbench,
-please report:
+The exact upstream PicoDrive and Cyclone revisions used by the build are:
 
-- Amiga model and CPU
-- AmigaOS version
-- Picasso96 version
-- ZZ9000 firmware version
-- `zz9000.card` version
-- whether Workbench runs on ZZ9000 RTG
-- audio backend selected
-- game tested
-- exact symptom
+```text
+PicoDrive  26ecb2b6358fefba24e3d68b9eb2efba7f10d5ee
+Cyclone    3ac7cf1bdeecb60e2414980e8dc72ff092f69769
+```
 
-## Source status
+PicoDrive references emu2413 commit
+`a2dfc20ff507e4fd075cd325620bcea655e2c1f7`; version 1.1 uses only its exact
+header for the SMS build because YM2413 synthesis itself is disabled.
 
-The source code for the ZZ9000 / Amiga port will be made available after
-cleanup.
+See `source/README.md` for the source mapping, historical build layout and
+rebuild notes.
 
+Historical technical comments referring to earlier internal XACP development stages
+are retained where useful; private development-only attribution comments are omitted.
 
 ## Credits
 
-ZZ9000 / Amiga port, launcher, ARM integration, audio/video/input/save handling:
+ZZ9000 / AmigaOS port, launcher, ARM integration, audio/video/input/save
+handling and real-hardware validation:
 
 **Xanxi**
 
@@ -176,4 +150,4 @@ Emulation core:
 
 **PicoDrive by notaz and contributors**
 
-See included license files for third-party components.
+See the included license and third-party notice files.

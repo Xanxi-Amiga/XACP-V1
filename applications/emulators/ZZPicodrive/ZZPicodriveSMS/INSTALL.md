@@ -2,26 +2,24 @@
 
 ## 1. Install compatible ZZ9000 firmware
 
-Install the matching ZZ9000 **XX19 firmware from Xanxi's branch**, or later XX
-firmware, or any firmware explicitly compatible with ZZPicoDriveSMS.
+Install **XACP v1.6 / firmware XX19a** and the matching `zz9000.card`, or a
+later firmware explicitly documented as compatible with ZZPicoDriveSMS.
 
-Install the matching `zz9000.card` file.
+Firmware XX19a:
 
-The firmware is not included in this repository or in the emulator archive.
+https://github.com/Xanxi-Amiga/XACP-ZZ9000/releases/tag/XX19a
 
-Download the XX19 firmware and matching `zz9000.card` from:
+The firmware is not included in the emulator archive.
 
-https://github.com/Xanxi-Amiga/XACP-V1/releases/tag/XX19_firmware
+Do not mix `BOOT.bin`, `zz9000.card` and ZZPicoDriveSMS executables from
+different firmware generations.
 
-Do not mix `BOOT.BIN`, `zz9000.card` and ZZPicoDriveSMS executables from
-different packages.
-
-ZZPicoDriveSMS is not compatible with MNT firmwares 1.0 to 1.13.  
-ZZPicoDriveSMS is not compatible with MiDWaN / BlitterStudio firmwares.
+ZZPicoDriveSMS is not compatible with official MNT firmware 1.13 or with
+MiDWaN / BlitterStudio firmware unless compatible XACP interfaces are provided.
 
 This is not a criticism of other ZZ9000 firmware branches. ZZPicoDriveSMS needs
-specific low-level Core1, DDR mapping and RTG/PAN mechanisms for this
-application, and therefore requires an explicitly compatible firmware.
+specific low-level Core1, DDR mapping and RTG/PAN mechanisms and therefore
+requires an explicitly compatible firmware.
 
 ## 2. Power cycle
 
@@ -41,8 +39,7 @@ Install AHI if you want to use the AHI audio backend.
 
 The Paula DMA backend does not require AHI.
 
-YM2413 / FM audio is not enabled in this release. Games with optional FM sound
-should still run, but this release uses the standard PSG audio path.
+YM2413 / FM audio is not enabled in version 1.1.
 
 ## 5. Copy ZZPicoDriveSMS
 
@@ -50,7 +47,7 @@ Copy the ZZPicoDriveSMS directory to your Amiga.
 
 ## 6. Add ROMs
 
-Copy your own Sega Master System ROMs to a directory of your choice.
+Copy your own Master System ROMs to a directory of your choice.
 
 No ROMs are included.
 

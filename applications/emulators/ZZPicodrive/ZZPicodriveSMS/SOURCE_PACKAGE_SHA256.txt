@@ -1,0 +1,20 @@
+# ZZPicoDriveSMS 1.1 source verification anchors
+#
+# This file records release-critical source/binary identities.
+# It is not an exhaustive checksum of every documentation file.
+#
+281d00e1fd91da9c0e47aa0dc1ea477a830fa59665c69ea3f362e3a1207500fc  ZZPicodriveSMS_v1.1.lha
+bc41baf1da3eab6152f4f4a3a490d7817a18ceb250b78f3a795fa642ee8eb9a6  source/amiga/ZZPicoDriveSMS_v1.1.c
+1806713e6cb89ccce8922413842d4245b51e65d50ab58cd5ee2071227692b170  source/amiga/blob_data.c
+28e0e08278af1bdd0a99ad5d95a2f8d9ee9c2b4495077b5ab141ea566fd5e82b  source/arm/zzpico_core1.c
+add1a5ffad26836dbd6eb8cd67fd967487c6207ac0a505a8d7926e0e65d8933b  source/arm/zzpico_shared.h
+98b8d5a657f4da9bf82f6339085946438a21b217b2f05b1c668089802fdbac28  source/arm/zzpico_font8x8.h
+0ca4482bb0587719e32b06b7559e31d17b9f47cdb60ed3dc30880930d98f719e  source/arm/zzpicodrive_sms_v1.1.bin
+466400e728a731e8f60e25b7d353abcb53531522d1dc76bbaa1bdd98b411d688  source/arm/build_sms.sh
+a69f1f409ba25323664d1f3c546422cec6916cc1347eede8401ddc6046662d52  source/arm/picodrive_patches.sh
+a6e3adc35034e20afdf0839206be3362c7329bd460b9e90e9116a68ab3a5b9de  source/arm/emu2413_for_picodrive_tree.h
+#
+# Exact upstream revisions:
+# PicoDrive: 26ecb2b6358fefba24e3d68b9eb2efba7f10d5ee
+# Cyclone:   3ac7cf1bdeecb60e2414980e8dc72ff092f69769
+# emu2413:   a2dfc20ff507e4fd075cd325620bcea655e2c1f7

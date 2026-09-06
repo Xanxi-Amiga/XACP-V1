@@ -1,0 +1,22 @@
+ZZPicoDriveSMS 1.1 upstream source reference
+=============================================
+
+PicoDrive
+---------
+Repository: https://github.com/notaz/picodrive
+Commit:     26ecb2b6358fefba24e3d68b9eb2efba7f10d5ee
+
+Cyclone 68000
+-------------
+Repository: https://github.com/irixxxx/cyclone68000
+Commit:     3ac7cf1bdeecb60e2414980e8dc72ff092f69769
+
+emu2413 header
+--------------
+Repository: https://github.com/digital-sound-antiques/emu2413
+Commit:     a2dfc20ff507e4fd075cd325620bcea655e2c1f7
+File used:  emu2413.h (exact upstream header; implementation not linked)
+
+The exact PicoDrive and Cyclone source archives are retained in the
+`archives/` directory of this source publication. The emu2413 header and MIT
+license are retained in `emu2413/`.

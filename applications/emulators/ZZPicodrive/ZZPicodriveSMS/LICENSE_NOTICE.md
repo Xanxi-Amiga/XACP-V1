@@ -2,14 +2,40 @@
 
 ZZPicoDriveSMS is distributed without any commercial ROM image.
 
-The PicoDrive emulation core is by notaz and contributors.
+The emulation core is **PicoDrive by notaz and contributors**.
 
-The ZZ9000 / Amiga port, launcher, ARM integration, audio/video/input/save
-handling are by Xanxi.
+ZZ9000 / AmigaOS port, launcher, ARM Core1 integration,
+audio/video/input/save handling and XACP integration are by **Xanxi**.
 
-The source code for the ZZ9000 / Amiga port will be made available after
-cleanup.
+The corresponding source for ZZPicoDriveSMS 1.1 is published under:
 
-Please include the original PicoDrive license / copying files with binary
-releases. If your build includes additional third-party components, include
-their license texts as well.
+```text
+source/
+```
+
+The release is based on PicoDrive commit:
+
+```text
+26ecb2b6358fefba24e3d68b9eb2efba7f10d5ee
+```
+
+PicoDrive at this revision uses its historical non-commercial license. Modified
+redistributions must include the complete source code for the components used by
+the binary.
+
+The corresponding Cyclone revision is:
+
+```text
+3ac7cf1bdeecb60e2414980e8dc72ff092f69769
+```
+
+The SMS build also uses the `emu2413.h` header from emu2413 commit
+`a2dfc20ff507e4fd075cd325620bcea655e2c1f7`. The header is reproduced in the
+source package with its MIT license. YM2413 synthesis is not linked into this
+release.
+
+The PicoDrive license text is reproduced at `COPYING_PICODRIVE.txt`; original
+PicoDrive and Cyclone notices are preserved in their exact upstream source
+archives.
+
+See `THIRD_PARTY_NOTICES.md` and `source/third_party/README.md`.

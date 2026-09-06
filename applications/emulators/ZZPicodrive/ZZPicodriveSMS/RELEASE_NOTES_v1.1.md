@@ -2,7 +2,7 @@
 
 ## Summary
 
-ZZPicoDriveSMS is a Sega Master System emulator for Amiga classic systems
+ZZPicoDriveSMS is a Sega Master System emulator for classic Amiga systems
 equipped with an MNT ZZ9000.
 
 The emulation core runs on the ZZ9000 ARM Core1. The Amiga 68k side handles the
@@ -23,27 +23,26 @@ launcher, file access, RTG display, input, audio output, SRAM and savestates.
 
 ## Audio note
 
-YM2413 / FM audio is not enabled in this release. Games with optional FM sound
-should still run, but this release uses the standard PSG audio path.
+YM2413 / FM audio is not enabled in version 1.1. Games with optional FM sound
+use the standard PSG path in this release.
 
 ## Requirements
 
 - MNT ZZ9000.
-- Firmware XX19 from Xanxi's branch, or later XX firmware, or any firmware
-  explicitly compatible with ZZPicoDriveSMS.
+- **XACP v1.6 / firmware XX19a**, or a later firmware explicitly documented as
+  compatible with ZZPicoDriveSMS.
 - Matching `zz9000.card`.
 - Picasso96.
 - Valid 320x240x32 ZZ9000 RTG mode.
 - AHI if using the AHI backend.
 
-The firmware is not included in this release.
+Firmware XX19a:
 
-Download the XX19 firmware and matching `zz9000.card` from:
+https://github.com/Xanxi-Amiga/XACP-ZZ9000/releases/tag/XX19a
 
-https://github.com/Xanxi-Amiga/XACP-V1/releases/tag/XX19_firmware
-
-ZZPicoDriveSMS is not compatible with MNT firmwares 1.0 to 1.13 or
-MiDWaN / BlitterStudio firmwares.
+ZZPicoDriveSMS is not compatible with official MNT firmware 1.13 or other
+firmware branches unless they explicitly provide the required XACP-compatible
+interface.
 
 ## ROMs
 
@@ -68,5 +67,8 @@ misc/emu
 
 ## Sources
 
-The source code for the ZZ9000 / Amiga port will be made available after
-cleanup.
+The corresponding source for version 1.1 is published in `source/`.
+
+The source publication records the exact released ARM blob and the final
+retained 68k/Core1 source, together with the upstream revisions and build files
+required for the SMS port.
